@@ -48,7 +48,7 @@
     --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* Advertiser360 brand theme: rich near-black base, gold (#F3C635) accent.
+/* Advertisers360 brand theme: rich near-black base, gold (#F3C635) accent.
    The sidebar stays a dark "brand chrome" surface in BOTH light and dark
    mode (deliberate — premium SaaS products like Vercel/Linear keep their
    nav chrome dark regardless of content theme, which is what makes black

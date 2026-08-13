@@ -55,7 +55,7 @@ export default function LoginPage() {
             A
           </span>
           <span className="text-lg font-semibold tracking-tight">
-            Advertiser<span className="text-sidebar-primary">360</span>
+            Advertisers<span className="text-sidebar-primary">360</span>
           </span>
         </div>
         <div className="relative flex flex-col gap-3">
@@ -68,7 +68,7 @@ export default function LoginPage() {
           </p>
         </div>
         <p className="relative text-xs text-sidebar-foreground/40">
-          &copy; {new Date().getFullYear()} Advertiser360. All rights reserved.
+          &copy; {new Date().getFullYear()} Advertisers360. All rights reserved.
         </p>
       </div>
 

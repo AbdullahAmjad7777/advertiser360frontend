@@ -45,7 +45,7 @@ export function Sidebar({
               collapsed ? "w-0 opacity-0" : "w-auto opacity-100",
             )}
           >
-            Advertiser<span className="text-sidebar-primary">360</span>
+            Advertisers<span className="text-sidebar-primary">360</span>
           </span>
         </div>
         {onToggleCollapse && (
@@ -111,7 +111,7 @@ export function Sidebar({
           collapsed ? "h-0 px-5 py-0 opacity-0" : "h-auto px-5 py-4 opacity-100",
         )}
       >
-        Advertiser360 HRMS
+        Advertisers360 HRMS
       </div>
     </div>
   );

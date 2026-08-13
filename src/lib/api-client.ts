@@ -73,6 +73,16 @@ apiClient.interceptors.response.use(
       setAccessToken(null);
       sessionExpiredHandler?.();
     }
+
+    // Account was deactivated mid-session (still-valid token, but the
+    // backend now rejects it) — no amount of retrying/refreshing fixes
+    // this, so drop straight to logout instead of surfacing a raw 403.
+    const code = (error.response?.data as { code?: string } | undefined)?.code;
+    if (error.response?.status === 403 && code === "ACCOUNT_DEACTIVATED") {
+      setAccessToken(null);
+      sessionExpiredHandler?.();
+    }
+
     return Promise.reject(error);
   },
 );

@@ -3,7 +3,10 @@ import { toast } from "sonner";
 import * as attendanceApi from "@/api/attendance";
 import * as leavesApi from "@/api/leaves";
 import * as notificationsApi from "@/api/notifications";
+import * as screenshotsApi from "@/api/screenshots";
 import { AttendanceStatusBadge } from "@/components/status-badges";
+import { AttendanceTrendChart } from "@/components/charts/AttendanceTrendChart";
+import { ScreenshotActivityChart } from "@/components/charts/ScreenshotActivityChart";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -22,6 +25,8 @@ export function FullAccessDashboard() {
   const [busyId, setBusyId] = useState<number | null>(null);
 
   const attendanceToday = useFetch(() => attendanceApi.fetchTodayAttendance({ limit: 10 }), []);
+  const attendanceTrend = useFetch(() => attendanceApi.fetchAttendanceTrend({ days: 14 }), []);
+  const screenshotActivity = useFetch(() => screenshotsApi.fetchScreenshotActivity(7), []);
   const pendingLeaves = useFetch(() => leavesApi.fetchLeaves({ status: "pending", limit: 10 }), []);
   const activity = useFetch(() => notificationsApi.fetchNotifications({ limit: 50 }), []);
 
@@ -57,6 +62,13 @@ export function FullAccessDashboard() {
 
   return (
     <div className="grid gap-4 xl:grid-cols-2">
+      <AttendanceTrendChart
+        data={attendanceTrend.data}
+        loading={attendanceTrend.loading}
+        description="Company-wide present, late, and absent counts, last 14 days."
+      />
+      <ScreenshotActivityChart data={screenshotActivity.data} loading={screenshotActivity.loading} />
+
       <Card className="xl:col-span-2">
         <CardHeader>
           <CardTitle>Today's Attendance</CardTitle>

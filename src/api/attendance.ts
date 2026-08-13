@@ -4,6 +4,8 @@ import type {
   AttendanceHistoryParams,
   AttendanceHistoryRow,
   AttendanceRecord,
+  AttendanceTrendParams,
+  AttendanceTrendPoint,
   Paginated,
   PageParams,
   TodayAttendanceRow,
@@ -32,5 +34,12 @@ export async function fetchAttendanceHistory(employeeId: number, params: Attenda
     `/attendance/employee/${employeeId}`,
     { params },
   );
+  return res.data.data;
+}
+
+export async function fetchAttendanceTrend(params: AttendanceTrendParams) {
+  const res = await apiClient.get<ApiResponse<AttendanceTrendPoint[]>>("/attendance/trend", {
+    params,
+  });
   return res.data.data;
 }

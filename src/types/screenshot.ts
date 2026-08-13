@@ -15,3 +15,8 @@ export interface ScreenshotListParams {
   from?: string;
   to?: string;
 }
+
+export interface ScreenshotActivityPoint {
+  date: string;
+  count: number;
+}

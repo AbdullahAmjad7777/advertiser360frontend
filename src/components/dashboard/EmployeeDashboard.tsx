@@ -4,6 +4,7 @@ import * as attendanceApi from "@/api/attendance";
 import * as leavesApi from "@/api/leaves";
 import * as notificationsApi from "@/api/notifications";
 import { AttendanceStatusBadge } from "@/components/status-badges";
+import { AttendanceTrendChart } from "@/components/charts/AttendanceTrendChart";
 import { DownloadAgentCard } from "@/components/dashboard/DownloadAgentCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,6 +22,7 @@ export function EmployeeDashboard() {
     () => attendanceApi.fetchAttendanceHistory(user!.id, { from: today, to: today, limit: 1 }),
     [user!.id, today],
   );
+  const attendanceTrend = useFetch(() => attendanceApi.fetchAttendanceTrend({ days: 14 }), []);
   const balance = useFetch(() => leavesApi.fetchLeaveBalance(user!.id), [user!.id]);
   const notifications = useFetch(() => notificationsApi.fetchNotifications({ limit: 5 }), []);
 
@@ -120,6 +122,15 @@ export function EmployeeDashboard() {
           )}
         </CardContent>
       </Card>
+
+      <div className="lg:col-span-2">
+        <AttendanceTrendChart
+          data={attendanceTrend.data}
+          loading={attendanceTrend.loading}
+          title="My Attendance"
+          description="Your present, late, and absent days, last 14 days."
+        />
+      </div>
 
       <Card className="lg:col-span-2">
         <CardHeader>

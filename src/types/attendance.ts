@@ -45,3 +45,18 @@ export interface AttendanceHistoryParams {
   from?: string;
   to?: string;
 }
+
+export interface AttendanceTrendPoint {
+  date: string;
+  present: number;
+  late: number;
+  absent: number;
+  onLeave: number;
+  halfDay: number;
+  holiday: number;
+}
+
+export interface AttendanceTrendParams {
+  days?: number;
+  employeeId?: number;
+}

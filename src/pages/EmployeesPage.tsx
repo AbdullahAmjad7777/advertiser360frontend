@@ -71,15 +71,20 @@ export default function EmployeesPage() {
   }
 
   async function handleDeactivate(employee: Employee) {
-    if (!window.confirm(`Deactivate ${employee.full_name}? They will no longer be able to sign in.`)) {
+    if (
+      !window.confirm(
+        `Permanently delete ${employee.full_name}? This removes their account and all of their ` +
+          `data (attendance, payroll, screenshots, leaves, messages) from the system. This cannot be undone.`,
+      )
+    ) {
       return;
     }
     try {
       await employeesApi.deactivateEmployee(employee.id);
-      toast.success("Employee deactivated");
+      toast.success("Employee deleted");
       employees.refetch();
     } catch (err) {
-      toast.error(getErrorMessage(err, "Failed to deactivate employee"));
+      toast.error(getErrorMessage(err, "Failed to delete employee"));
     }
   }
 
@@ -171,10 +176,10 @@ export default function EmployeesPage() {
                       {emp.is_active === 1 && (
                         <Button
                           size="sm"
-                          variant="outline"
+                          variant="destructive"
                           onClick={() => handleDeactivate(emp)}
                         >
-                          Deactivate
+                          Delete
                         </Button>
                       )}
                     </div>

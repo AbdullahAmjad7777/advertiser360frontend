@@ -7,6 +7,7 @@ import {
   UserCircle,
   MonitorPlay,
   MessageSquare,
+  Settings,
 } from "lucide-react";
 import type { AuthUser } from "@/types";
 import { isFullAccess } from "@/lib/permissions";
@@ -29,7 +30,10 @@ export function getNavItems(user: AuthUser): NavItem[] {
     { label: "Payroll", to: "/payroll", icon: Wallet },
     { label: "Messages", to: "/messages", icon: MessageSquare },
     ...(fullAccess
-      ? [{ label: "Screenshots", to: "/screenshots", icon: MonitorPlay }]
+      ? [
+          { label: "Screenshots", to: "/screenshots", icon: MonitorPlay },
+          { label: "Settings", to: "/settings", icon: Settings },
+        ]
       : []),
   ];
 }

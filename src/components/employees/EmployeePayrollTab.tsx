@@ -1,5 +1,6 @@
 import { useState } from "react";
 import * as payrollApi from "@/api/payroll";
+import { LateDeductionSummary } from "@/components/payroll/LateDeductionSummary";
 import { PayrollStatusBadge } from "@/components/status-badges";
 import { Button } from "@/components/ui/button";
 import {
@@ -40,6 +41,7 @@ export function EmployeePayrollTab({ employeeId }: { employeeId: number }) {
               <TableHead>Absent</TableHead>
               <TableHead>Gross</TableHead>
               <TableHead>Deductions</TableHead>
+              <TableHead>Late Deduction</TableHead>
               <TableHead>Net</TableHead>
               <TableHead>Status</TableHead>
             </TableRow>
@@ -54,6 +56,13 @@ export function EmployeePayrollTab({ employeeId }: { employeeId: number }) {
                 <TableCell>{p.total_absent_days}</TableCell>
                 <TableCell>{formatCurrency(p.gross_salary)}</TableCell>
                 <TableCell>{formatCurrency(p.total_deductions)}</TableCell>
+                <TableCell>
+                  <LateDeductionSummary
+                    lateDeductionDays={p.late_deduction_days}
+                    lateDeductionAmount={p.late_deduction_amount}
+                    breakdown={p.late_deduction_breakdown}
+                  />
+                </TableCell>
                 <TableCell className="font-medium">{formatCurrency(p.net_salary)}</TableCell>
                 <TableCell>
                   <PayrollStatusBadge status={p.status} />

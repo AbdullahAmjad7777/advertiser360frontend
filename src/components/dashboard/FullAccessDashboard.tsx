@@ -7,6 +7,7 @@ import * as screenshotsApi from "@/api/screenshots";
 import { AttendanceStatusBadge } from "@/components/status-badges";
 import { AttendanceTrendChart } from "@/components/charts/AttendanceTrendChart";
 import { ScreenshotActivityChart } from "@/components/charts/ScreenshotActivityChart";
+import { MyAttendanceCard } from "@/components/dashboard/MyAttendanceCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -17,11 +18,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useAuth } from "@/hooks/useAuth";
 import { useFetch } from "@/hooks/useFetch";
 import { getErrorMessage } from "@/lib/api-client";
 import { formatDate, formatDateTime, formatTime } from "@/lib/format";
 
 export function FullAccessDashboard() {
+  const { user } = useAuth();
   const [busyId, setBusyId] = useState<number | null>(null);
 
   const attendanceToday = useFetch(() => attendanceApi.fetchTodayAttendance({ limit: 10 }), []);
@@ -62,6 +65,8 @@ export function FullAccessDashboard() {
 
   return (
     <div className="grid gap-4 xl:grid-cols-2">
+      {user?.role === "manager" && <MyAttendanceCard employeeId={user.id} />}
+
       <AttendanceTrendChart
         data={attendanceTrend.data}
         loading={attendanceTrend.loading}

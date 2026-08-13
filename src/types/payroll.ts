@@ -38,6 +38,19 @@ export interface DeductionRule {
   created_at: string;
 }
 
+export interface LateDeductionDay {
+  date: string;
+  checkInTime: string | null;
+}
+
+export interface LateDeductionGroup {
+  groupNumber: number;
+  officeStartTime: string;
+  lateDays: LateDeductionDay[];
+  deductionDate: string;
+  deductionAmount: number;
+}
+
 export interface Payroll {
   id: number;
   employee_id: number;
@@ -48,8 +61,11 @@ export interface Payroll {
   total_present_days: number;
   total_absent_days: number;
   total_leave_days: number;
+  late_deduction_days: number;
   gross_salary: string;
   total_deductions: string;
+  late_deduction_amount: string;
+  late_deduction_breakdown: LateDeductionGroup[];
   net_salary: string;
   status: PayrollStatus;
   generated_at: string;

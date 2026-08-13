@@ -4,6 +4,7 @@ import * as employeesApi from "@/api/employees";
 import * as payrollApi from "@/api/payroll";
 import { EmployeePayrollTab } from "@/components/employees/EmployeePayrollTab";
 import { GeneratePayrollPanel } from "@/components/payroll/GeneratePayrollPanel";
+import { LateDeductionSummary } from "@/components/payroll/LateDeductionSummary";
 import { PayrollStatusBadge } from "@/components/status-badges";
 import { Button } from "@/components/ui/button";
 import {
@@ -163,6 +164,7 @@ export default function PayrollPage() {
                 <TableHead>Period</TableHead>
                 <TableHead>Gross</TableHead>
                 <TableHead>Deductions</TableHead>
+                <TableHead>Late Deduction</TableHead>
                 <TableHead>Net</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
@@ -180,6 +182,13 @@ export default function PayrollPage() {
                   </TableCell>
                   <TableCell>{formatCurrency(p.gross_salary)}</TableCell>
                   <TableCell>{formatCurrency(p.total_deductions)}</TableCell>
+                  <TableCell>
+                    <LateDeductionSummary
+                      lateDeductionDays={p.late_deduction_days}
+                      lateDeductionAmount={p.late_deduction_amount}
+                      breakdown={p.late_deduction_breakdown}
+                    />
+                  </TableCell>
                   <TableCell className="font-medium">{formatCurrency(p.net_salary)}</TableCell>
                   <TableCell>
                     <PayrollStatusBadge status={p.status} />

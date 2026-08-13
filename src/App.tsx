@@ -12,6 +12,7 @@ import LoginPage from "@/pages/LoginPage";
 import MessagesPage from "@/pages/MessagesPage";
 import PayrollPage from "@/pages/PayrollPage";
 import ScreenshotsPage from "@/pages/ScreenshotsPage";
+import SettingsPage from "@/pages/SettingsPage";
 
 function AppContent() {
   const {
@@ -53,6 +54,7 @@ function AppContent() {
         <Route path="/payroll" element={<PayrollPage />} />
         <Route path="/screenshots" element={<ScreenshotsPage />} />
         <Route path="/messages" element={<MessagesPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

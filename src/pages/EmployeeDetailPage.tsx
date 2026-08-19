@@ -3,6 +3,7 @@ import * as employeesApi from "@/api/employees";
 import { EmployeeAttendanceTab } from "@/components/employees/EmployeeAttendanceTab";
 import { EmployeeLeavesTab } from "@/components/employees/EmployeeLeavesTab";
 import { EmployeePayrollTab } from "@/components/employees/EmployeePayrollTab";
+import { ShiftTimingCard } from "@/components/employees/ShiftTimingCard";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
@@ -37,11 +38,20 @@ export default function EmployeeDetailPage() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{emp.full_name}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {emp.employee_code} · {emp.email}
-          </p>
+        <div className="flex items-center gap-4">
+          {emp.profile_picture_url && (
+            <img
+              src={emp.profile_picture_url}
+              alt={emp.full_name}
+              className="h-14 w-14 rounded-full object-cover"
+            />
+          )}
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight">{emp.full_name}</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {emp.employee_code} · {emp.email}
+            </p>
+          </div>
         </div>
         <Badge variant={emp.is_active ? "default" : "secondary"}>
           {emp.is_active ? "Active" : "Inactive"}
@@ -73,7 +83,41 @@ export default function EmployeeDetailPage() {
           <dt className="text-muted-foreground">Phone</dt>
           <dd>{emp.phone ?? "-"}</dd>
         </div>
+        <div>
+          <dt className="text-muted-foreground">CNIC</dt>
+          <dd>{emp.cnic_number ?? "-"}</dd>
+        </div>
+        <div>
+          <dt className="text-muted-foreground">Date of birth</dt>
+          <dd>{emp.date_of_birth ? formatDate(emp.date_of_birth) : "-"}</dd>
+        </div>
+        <div className="col-span-2">
+          <dt className="text-muted-foreground">Address</dt>
+          <dd>{emp.address ?? "-"}</dd>
+        </div>
+        <div className="col-span-2">
+          <dt className="text-muted-foreground">Emergency contact</dt>
+          <dd>
+            {emp.emergency_contact_name
+              ? `${emp.emergency_contact_name} (${emp.emergency_contact_relation ?? "-"}) · ${emp.emergency_contact_phone ?? "-"}`
+              : "-"}
+          </dd>
+        </div>
+        {isFullAccess(user?.role ?? "employee") && (
+          <div className="col-span-2 sm:col-span-4">
+            <dt className="text-muted-foreground">Bank details</dt>
+            <dd>
+              {emp.bank_name
+                ? `${emp.bank_name} · ${emp.account_title} · ${emp.account_number}${emp.iban ? ` · ${emp.iban}` : ""}`
+                : "-"}
+            </dd>
+          </div>
+        )}
       </dl>
+
+      {isFullAccess(user?.role ?? "employee") && (
+        <ShiftTimingCard employee={emp} onUpdated={() => employee.refetch()} />
+      )}
 
       <Tabs defaultValue="attendance">
         <TabsList>

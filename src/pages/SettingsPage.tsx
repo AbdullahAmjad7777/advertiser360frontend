@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/hooks/useAuth";
 import { useFetch } from "@/hooks/useFetch";
 import { getErrorMessage } from "@/lib/api-client";
@@ -22,9 +23,11 @@ function toApiValue(time: string): string {
 export default function SettingsPage() {
   const { user } = useAuth();
   const officeHours = useFetch(() => settingsApi.fetchOfficeHours(), []);
+  const locationRestriction = useFetch(() => settingsApi.fetchLocationRestriction(), []);
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [saving, setSaving] = useState(false);
+  const [togglingLocation, setTogglingLocation] = useState(false);
 
   useEffect(() => {
     if (officeHours.data) {
@@ -51,6 +54,19 @@ export default function SettingsPage() {
       toast.error(getErrorMessage(err, "Failed to update office hours"));
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleLocationRestrictionToggle(enabled: boolean) {
+    setTogglingLocation(true);
+    try {
+      await settingsApi.updateLocationRestriction(enabled);
+      toast.success(enabled ? "Location restriction enabled" : "Location restriction disabled");
+      locationRestriction.refetch();
+    } catch (err) {
+      toast.error(getErrorMessage(err, "Failed to update location restriction"));
+    } finally {
+      setTogglingLocation(false);
     }
   }
 
@@ -113,6 +129,33 @@ export default function SettingsPage() {
                 </Button>
               </div>
             </form>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="max-w-lg">
+        <CardHeader>
+          <CardTitle>Location Restriction</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {locationRestriction.loading ? (
+            <p className="text-sm text-muted-foreground">Loading...</p>
+          ) : (
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="location-restriction-toggle">Require office location</Label>
+                <p className="text-sm text-muted-foreground">
+                  When on, employees can only sign in and check in/out while physically at the
+                  office. When off, everyone can use the portal from any location.
+                </p>
+              </div>
+              <Switch
+                id="location-restriction-toggle"
+                checked={locationRestriction.data?.enabled ?? false}
+                onCheckedChange={handleLocationRestrictionToggle}
+                disabled={togglingLocation}
+              />
+            </div>
           )}
         </CardContent>
       </Card>

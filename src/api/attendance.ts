@@ -1,6 +1,8 @@
 import { apiClient } from "@/lib/api-client";
 import type {
   ApiResponse,
+  AttendanceCorrectionInput,
+  AttendanceEditLogEntry,
   AttendanceHistoryParams,
   AttendanceHistoryRow,
   AttendanceRecord,
@@ -18,6 +20,30 @@ export async function checkIn() {
 
 export async function checkOut() {
   const res = await apiClient.post<ApiResponse<AttendanceRecord>>("/attendance/check-out");
+  return res.data.data;
+}
+
+// The record for whichever shift is currently open/most recent, resolved by
+// shift date rather than the browser's plain calendar date — this is what
+// keeps the check-in/check-out button correct across midnight for an
+// overnight shift, unlike querying history for "today".
+export async function fetchCurrentStatus() {
+  const res = await apiClient.get<ApiResponse<AttendanceRecord | null>>("/attendance/me/current");
+  return res.data.data;
+}
+
+export async function correctAttendance(attendanceId: number, input: AttendanceCorrectionInput) {
+  const res = await apiClient.patch<ApiResponse<AttendanceRecord>>(
+    `/attendance/${attendanceId}/correct`,
+    input,
+  );
+  return res.data.data;
+}
+
+export async function fetchAttendanceEditLog(attendanceId: number) {
+  const res = await apiClient.get<ApiResponse<AttendanceEditLogEntry[]>>(
+    `/attendance/${attendanceId}/edit-log`,
+  );
   return res.data.data;
 }
 

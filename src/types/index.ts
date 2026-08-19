@@ -8,3 +8,4 @@ export * from "./notification";
 export * from "./screenshot";
 export * from "./chat";
 export * from "./settings";
+export * from "./onboarding";

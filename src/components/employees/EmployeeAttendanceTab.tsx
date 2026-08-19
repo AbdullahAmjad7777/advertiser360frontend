@@ -10,13 +10,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { CorrectAttendanceDialog } from "@/components/employees/CorrectAttendanceDialog";
+import { useAuth } from "@/hooks/useAuth";
 import { useFetch } from "@/hooks/useFetch";
+import { isFullAccess } from "@/lib/permissions";
 import { formatDate, formatTime } from "@/lib/format";
+import type { AttendanceHistoryRow } from "@/types";
 
 const PAGE_SIZE = 10;
 
 export function EmployeeAttendanceTab({ employeeId }: { employeeId: number }) {
+  const { user } = useAuth();
+  const canCorrect = isFullAccess(user?.role ?? "employee");
   const [page, setPage] = useState(1);
+  const [correcting, setCorrecting] = useState<AttendanceHistoryRow | null>(null);
   const history = useFetch(
     () => attendanceApi.fetchAttendanceHistory(employeeId, { page, limit: PAGE_SIZE }),
     [employeeId, page],
@@ -40,6 +47,7 @@ export function EmployeeAttendanceTab({ employeeId }: { employeeId: number }) {
               <TableHead>Check-out</TableHead>
               <TableHead>Hours</TableHead>
               <TableHead>Status</TableHead>
+              {canCorrect && <TableHead />}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -52,11 +60,26 @@ export function EmployeeAttendanceTab({ employeeId }: { employeeId: number }) {
                 <TableCell>
                   <AttendanceStatusBadge status={row.status} />
                 </TableCell>
+                {canCorrect && (
+                  <TableCell className="text-right">
+                    <Button variant="outline" size="sm" onClick={() => setCorrecting(row)}>
+                      Correct
+                    </Button>
+                  </TableCell>
+                )}
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </div>
+      {correcting && (
+        <CorrectAttendanceDialog
+          record={correcting}
+          open={Boolean(correcting)}
+          onOpenChange={(open) => !open && setCorrecting(null)}
+          onSaved={() => history.refetch()}
+        />
+      )}
       {pagination.totalPages > 1 && (
         <div className="flex items-center justify-between text-sm">
           <span className="text-muted-foreground">

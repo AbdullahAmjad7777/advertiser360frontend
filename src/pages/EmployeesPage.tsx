@@ -3,6 +3,8 @@ import { Navigate, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import * as employeesApi from "@/api/employees";
 import { EmployeeFormDialog } from "@/components/employees/EmployeeFormDialog";
+import { InviteEmployeeDialog } from "@/components/employees/InviteEmployeeDialog";
+import { PendingInvitationsCard } from "@/components/employees/PendingInvitationsCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,7 +39,9 @@ export default function EmployeesPage() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<EmployeeListParams["status"]>("active");
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
+  const [invitationsRefreshKey, setInvitationsRefreshKey] = useState(0);
   const debouncedSearch = useDebouncedValue(search);
 
   const employees = useFetch(
@@ -58,11 +62,6 @@ export default function EmployeesPage() {
 
   if (user && !isFullAccess(user.role)) {
     return <Navigate to={`/employees/${user.id}`} replace />;
-  }
-
-  function openCreate() {
-    setEditingEmployee(null);
-    setDialogOpen(true);
   }
 
   function openEdit(employee: Employee) {
@@ -99,8 +98,10 @@ export default function EmployeesPage() {
             Manage employee records across the company.
           </p>
         </div>
-        <Button onClick={openCreate}>Add employee</Button>
+        <Button onClick={() => setInviteDialogOpen(true)}>Add employee</Button>
       </div>
+
+      <PendingInvitationsCard key={invitationsRefreshKey} />
 
       <div className="flex flex-wrap gap-3">
         <Input
@@ -228,6 +229,12 @@ export default function EmployeesPage() {
           employees.refetch();
           allActive.refetch();
         }}
+      />
+
+      <InviteEmployeeDialog
+        open={inviteDialogOpen}
+        onOpenChange={setInviteDialogOpen}
+        onInvited={() => setInvitationsRefreshKey((k) => k + 1)}
       />
     </div>
   );

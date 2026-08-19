@@ -34,7 +34,6 @@ interface EmployeeFormDialogProps {
 interface FormState {
   fullName: string;
   email: string;
-  password: string;
   phone: string;
   cnicNumber: string;
   gender: "male" | "female" | "other" | "";
@@ -50,7 +49,6 @@ interface FormState {
 const EMPTY_FORM: FormState = {
   fullName: "",
   email: "",
-  password: "",
   phone: "",
   cnicNumber: "",
   gender: "",
@@ -67,7 +65,6 @@ function employeeToForm(employee: Employee): FormState {
   return {
     fullName: employee.full_name,
     email: employee.email,
-    password: "",
     phone: employee.phone ?? "",
     cnicNumber: employee.cnic_number ?? "",
     gender: employee.gender ?? "",
@@ -81,6 +78,9 @@ function employeeToForm(employee: Employee): FormState {
   };
 }
 
+// Create is handled entirely by the invite-and-self-onboard flow (see
+// InviteEmployeeDialog / OnboardingPage) — this dialog only ever edits an
+// existing employee now.
 export function EmployeeFormDialog({
   open,
   onOpenChange,
@@ -91,7 +91,6 @@ export function EmployeeFormDialog({
   const { departments, designations, roles } = useLookups();
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [submitting, setSubmitting] = useState(false);
-  const isEdit = employee !== null;
 
   useEffect(() => {
     if (open) {
@@ -109,42 +108,24 @@ export function EmployeeFormDialog({
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
+    if (!employee) return;
     setSubmitting(true);
     try {
-      if (isEdit) {
-        await employeesApi.updateEmployee(employee.id, {
-          fullName: form.fullName,
-          email: form.email,
-          phone: form.phone || undefined,
-          cnicNumber: form.cnicNumber || undefined,
-          gender: form.gender || undefined,
-          dateOfBirth: form.dateOfBirth || undefined,
-          departmentId: form.departmentId ? Number(form.departmentId) : undefined,
-          designationId: form.designationId ? Number(form.designationId) : undefined,
-          roleId: form.roleId ? Number(form.roleId) : undefined,
-          managerId: form.managerId ? Number(form.managerId) : undefined,
-          joinDate: form.joinDate || undefined,
-          baseSalary: form.baseSalary ? Number(form.baseSalary) : undefined,
-        });
-        toast.success("Employee updated");
-      } else {
-        await employeesApi.createEmployee({
-          fullName: form.fullName,
-          email: form.email,
-          password: form.password,
-          phone: form.phone || undefined,
-          cnicNumber: form.cnicNumber || undefined,
-          gender: form.gender || undefined,
-          dateOfBirth: form.dateOfBirth || undefined,
-          departmentId: form.departmentId ? Number(form.departmentId) : undefined,
-          designationId: form.designationId ? Number(form.designationId) : undefined,
-          roleId: Number(form.roleId),
-          managerId: form.managerId ? Number(form.managerId) : undefined,
-          joinDate: form.joinDate,
-          baseSalary: form.baseSalary ? Number(form.baseSalary) : undefined,
-        });
-        toast.success("Employee created");
-      }
+      await employeesApi.updateEmployee(employee.id, {
+        fullName: form.fullName,
+        email: form.email,
+        phone: form.phone || undefined,
+        cnicNumber: form.cnicNumber || undefined,
+        gender: form.gender || undefined,
+        dateOfBirth: form.dateOfBirth || undefined,
+        departmentId: form.departmentId ? Number(form.departmentId) : undefined,
+        designationId: form.designationId ? Number(form.designationId) : undefined,
+        roleId: form.roleId ? Number(form.roleId) : undefined,
+        managerId: form.managerId ? Number(form.managerId) : undefined,
+        joinDate: form.joinDate || undefined,
+        baseSalary: form.baseSalary ? Number(form.baseSalary) : undefined,
+      });
+      toast.success("Employee updated");
       onOpenChange(false);
       onSaved();
     } catch (err) {
@@ -158,12 +139,8 @@ export function EmployeeFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{isEdit ? "Edit employee" : "Add employee"}</DialogTitle>
-          <DialogDescription>
-            {isEdit
-              ? "Update this employee's details."
-              : "Create a new employee account."}
-          </DialogDescription>
+          <DialogTitle>Edit employee</DialogTitle>
+          <DialogDescription>Update this employee's details.</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="grid gap-4" noValidate>
           <div className="grid grid-cols-2 gap-4">
@@ -186,19 +163,6 @@ export function EmployeeFormDialog({
                 required
               />
             </div>
-            {!isEdit && (
-              <div className="col-span-2 flex flex-col gap-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  minLength={8}
-                  value={form.password}
-                  onChange={(e) => update("password", e.target.value)}
-                  required
-                />
-              </div>
-            )}
             <div className="flex flex-col gap-2">
               <Label htmlFor="phone">Phone</Label>
               <Input

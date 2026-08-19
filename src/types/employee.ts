@@ -7,6 +7,15 @@ export interface Employee {
   email: string;
   phone: string | null;
   cnic_number: string | null;
+  address: string | null;
+  profile_picture_url: string | null;
+  emergency_contact_name: string | null;
+  emergency_contact_phone: string | null;
+  emergency_contact_relation: string | null;
+  bank_name: string | null;
+  account_title: string | null;
+  account_number: string | null;
+  iban: string | null;
   gender: "male" | "female" | "other" | null;
   date_of_birth: string | null;
   department_id: number | null;
@@ -20,6 +29,8 @@ export interface Employee {
   join_date: string;
   resign_date: string | null;
   base_salary: string;
+  shift_start_time: string | null;
+  shift_end_time: string | null;
   is_active: 0 | 1;
   created_at: string;
   updated_at: string;
@@ -48,7 +59,12 @@ export interface CreateEmployeeInput {
   baseSalary?: number;
 }
 
-export type UpdateEmployeeInput = Partial<Omit<CreateEmployeeInput, "password">>;
+export type UpdateEmployeeInput = Partial<Omit<CreateEmployeeInput, "password">> & {
+  // Per-employee shift override — null clears it back to the company
+  // default. Update-only: there's no UI for setting this at creation time.
+  shiftStartTime?: string | null;
+  shiftEndTime?: string | null;
+};
 
 export interface Department {
   id: number;

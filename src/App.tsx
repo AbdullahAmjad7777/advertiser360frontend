@@ -10,6 +10,7 @@ import EmployeesPage from "@/pages/EmployeesPage";
 import LeavesPage from "@/pages/LeavesPage";
 import LoginPage from "@/pages/LoginPage";
 import MessagesPage from "@/pages/MessagesPage";
+import OnboardingPage from "@/pages/OnboardingPage";
 import PayrollPage from "@/pages/PayrollPage";
 import ScreenshotsPage from "@/pages/ScreenshotsPage";
 import SettingsPage from "@/pages/SettingsPage";
@@ -40,6 +41,7 @@ function AppContent() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/onboarding/:token" element={<OnboardingPage />} />
       <Route
         element={
           <ProtectedRoute>

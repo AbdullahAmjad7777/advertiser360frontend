@@ -4,6 +4,7 @@ import { isJitsiCallLink } from "@/lib/jitsi";
 import { formatDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { Message } from "@/types";
+import { VoiceMessagePlayer } from "./VoiceMessagePlayer";
 
 const IMAGE_EXTENSIONS = new Set(["png", "jpg", "jpeg", "gif", "webp"]);
 const VIDEO_EXTENSIONS = new Set(["mp4", "mov"]);
@@ -46,6 +47,7 @@ export function MessageBubble({ message, isOwn }: { message: Message; isOwn: boo
         {message.attachment_path && (
           <AttachmentPreview
             attachmentPath={message.attachment_path}
+            mimeType={message.attachment_mime_type}
             url={getAttachmentUrl(message.id)}
             isOwn={isOwn}
           />
@@ -58,14 +60,21 @@ export function MessageBubble({ message, isOwn }: { message: Message; isOwn: boo
 
 function AttachmentPreview({
   attachmentPath,
+  mimeType,
   url,
   isOwn,
 }: {
   attachmentPath: string;
+  mimeType: string | null;
   url: string;
   isOwn: boolean;
 }) {
   const ext = fileExtension(attachmentPath);
+  const isAudio = mimeType?.startsWith("audio/") || AUDIO_EXTENSIONS.has(ext);
+
+  if (isAudio) {
+    return <VoiceMessagePlayer url={url} isOwn={isOwn} />;
+  }
 
   if (IMAGE_EXTENSIONS.has(ext)) {
     return (
@@ -83,14 +92,6 @@ function AttachmentPreview({
       // has nothing to resolve against and collapses to 0 width.
       // eslint-disable-next-line jsx-a11y/media-has-caption
       <video controls src={url} className="mt-2 h-48 w-80 rounded-md border" />
-    );
-  }
-
-  if (AUDIO_EXTENSIONS.has(ext)) {
-    return (
-      // Same fixed-width reasoning as the video case above.
-      // eslint-disable-next-line jsx-a11y/media-has-caption
-      <audio controls src={url} className="mt-2 w-64" />
     );
   }
 

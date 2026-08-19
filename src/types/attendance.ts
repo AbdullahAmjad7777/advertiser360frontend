@@ -60,3 +60,23 @@ export interface AttendanceTrendParams {
   days?: number;
   employeeId?: number;
 }
+
+export interface AttendanceCorrectionInput {
+  checkInTime?: string | null;
+  checkOutTime?: string | null;
+  status?: AttendanceStatus;
+  reason?: string;
+}
+
+export interface AttendanceEditLogEntry {
+  id: number;
+  old_check_in_time: string | null;
+  old_check_out_time: string | null;
+  old_status: AttendanceStatus | null;
+  new_check_in_time: string | null;
+  new_check_out_time: string | null;
+  new_status: AttendanceStatus | null;
+  reason: string | null;
+  edited_at: string;
+  edited_by_name: string | null;
+}

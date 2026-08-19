@@ -26,6 +26,7 @@ export interface Message {
   sender_name: string;
   content: string | null;
   attachment_path: string | null;
+  attachment_mime_type: string | null;
   sent_at: string;
   is_deleted: 0 | 1;
 }

@@ -6,21 +6,23 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useFetch } from "@/hooks/useFetch";
 import { getErrorMessage } from "@/lib/api-client";
-import { formatTime, localDateString } from "@/lib/format";
+import { formatTime } from "@/lib/format";
 
 // Shared between the Employee dashboard and the Manager view of the
 // full-access dashboard — managers check in/out through the same flow as
 // employees, they just aren't screenshot-monitored by the desktop agent.
+//
+// Reads the *current shift* record (resolved server-side by shift date, not
+// the browser's plain calendar date) rather than querying attendance history
+// for "today" — our shifts can cross midnight, so a still-open shift that
+// started yesterday evening needs to keep showing as checked-in after the
+// calendar date rolls over, not reset to "Not checked in yet".
 export function MyAttendanceCard({ employeeId }: { employeeId: number }) {
-  const today = localDateString();
   const [actionLoading, setActionLoading] = useState(false);
 
-  const attendance = useFetch(
-    () => attendanceApi.fetchAttendanceHistory(employeeId, { from: today, to: today, limit: 1 }),
-    [employeeId, today],
-  );
+  const attendance = useFetch(() => attendanceApi.fetchCurrentStatus(), [employeeId]);
 
-  const todayRecord = attendance.data?.items[0] ?? null;
+  const todayRecord = attendance.data ?? null;
 
   async function handleCheckIn() {
     setActionLoading(true);

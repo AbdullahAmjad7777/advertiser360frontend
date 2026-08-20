@@ -9,3 +9,4 @@ export * from "./screenshot";
 export * from "./chat";
 export * from "./settings";
 export * from "./onboarding";
+export * from "./agent";

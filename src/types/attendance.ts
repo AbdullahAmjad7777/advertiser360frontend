@@ -22,6 +22,7 @@ export interface TodayAttendanceRow {
   employee_id: number;
   employee_code: string;
   full_name: string;
+  attendance_id: number | null;
   check_in_time: string | null;
   check_out_time: string | null;
   total_hours: string | null;

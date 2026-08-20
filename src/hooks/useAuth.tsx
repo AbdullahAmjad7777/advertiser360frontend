@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import * as authApi from "@/api/auth";
+import { wakeDesktopAgent } from "@/lib/agent-wake";
 import {
   apiClient,
   getErrorCode,
@@ -185,6 +186,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(loggedInUser);
         setLocationRestricted(false);
         connectSocket();
+        wakeDesktopAgent();
         if (loggedInUser.role !== "ceo") {
           startLocationPolling();
         }

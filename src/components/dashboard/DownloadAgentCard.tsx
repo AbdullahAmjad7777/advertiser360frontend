@@ -23,7 +23,7 @@ export function DownloadAgentCard() {
           monitoring.{" "}
           {isMac
             ? "Open the .dmg and drag the app into Applications."
-            : "Extract the zip, then run the .exe inside."}
+            : "Run the installer and follow the setup wizard."}
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col items-start gap-2">

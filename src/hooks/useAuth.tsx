@@ -8,6 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { toast } from "sonner";
 import * as authApi from "@/api/auth";
 import { wakeDesktopAgent } from "@/lib/agent-wake";
 import {
@@ -18,7 +19,7 @@ import {
   onSessionExpired,
 } from "@/lib/api-client";
 import { getCurrentPosition } from "@/lib/geolocation";
-import { connectSocket, disconnectSocket } from "@/lib/socket";
+import { connectSocket, disconnectSocket, onForceLogout } from "@/lib/socket";
 import { setAccessToken } from "@/lib/token-store";
 import type { AuthUser } from "@/types";
 
@@ -131,6 +132,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     return onSessionExpired(() => clearSession());
+  }, [clearSession]);
+
+  // Instant path for a manager/CEO's "force session refresh" action: an
+  // already-open, already-connected tab gets logged out the moment the
+  // backend pushes this over the socket, instead of waiting for the next
+  // API call to hit the session_epoch check in the response interceptor.
+  useEffect(() => {
+    onForceLogout((payload) => {
+      toast.info(payload?.message ?? "Your session was reset. Please log in again.");
+      clearSession();
+    });
   }, [clearSession]);
 
   useEffect(() => {

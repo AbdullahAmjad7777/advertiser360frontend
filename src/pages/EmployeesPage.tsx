@@ -69,6 +69,26 @@ export default function EmployeesPage() {
     setDialogOpen(true);
   }
 
+  async function handleRevokeSession(employee: Employee) {
+    if (
+      !window.confirm(
+        `Reset ${employee.full_name}'s session? They'll be logged out of the web CRM (immediately, ` +
+          `if their tab is open) and will need to log in again — which also refreshes their desktop agent.`,
+      )
+    ) {
+      return;
+    }
+    try {
+      await employeesApi.revokeEmployeeSession(employee.id);
+      toast.success(
+        `${employee.full_name}'s session was reset. Next time their browser checks in, they'll be ` +
+          `asked to log in again — which will also refresh the desktop agent.`,
+      );
+    } catch (err) {
+      toast.error(getErrorMessage(err, "Failed to reset session"));
+    }
+  }
+
   async function handleDeactivate(employee: Employee) {
     if (
       !window.confirm(
@@ -174,6 +194,15 @@ export default function EmployeesPage() {
                       <Button size="sm" variant="outline" onClick={() => openEdit(emp)}>
                         Edit
                       </Button>
+                      {emp.is_active === 1 && emp.id !== user?.id && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleRevokeSession(emp)}
+                        >
+                          Force session refresh
+                        </Button>
+                      )}
                       {emp.is_active === 1 && (
                         <Button
                           size="sm"

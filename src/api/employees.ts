@@ -40,3 +40,8 @@ export async function deactivateEmployee(id: number) {
   const res = await apiClient.delete<ApiResponse<Employee>>(`/employees/${id}`);
   return res.data.data;
 }
+
+export async function revokeEmployeeSession(id: number) {
+  const res = await apiClient.post<ApiResponse<Employee>>(`/employees/${id}/revoke-session`);
+  return res.data.data;
+}

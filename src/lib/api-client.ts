@@ -1,4 +1,5 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig } from "axios";
+import { toast } from "sonner";
 import { getAccessToken, setAccessToken } from "./token-store";
 
 // VITE_API_BASE_URL (just the origin, e.g. https://advertiser360-backend.vercel.app)
@@ -61,6 +62,7 @@ apiClient.interceptors.response.use(
     const config = error.response?.config as RetriableConfig | undefined;
     const isAuthEndpoint =
       config?.url?.includes("/auth/login") || config?.url?.includes("/auth/refresh");
+    const code = (error.response?.data as { code?: string } | undefined)?.code;
 
     if (error.response?.status === 401 && config && !config._retried && !isAuthEndpoint) {
       config._retried = true;
@@ -71,13 +73,19 @@ apiClient.interceptors.response.use(
         return apiClient(config);
       }
       setAccessToken(null);
+      // A manager/CEO's "force session refresh" action already pushes an
+      // instant socket event for an open, connected tab (see useAuth's
+      // onForceLogout) — this is the fallback for a tab that missed that
+      // push (e.g. socket was mid-reconnect), surfaced on its next API call.
+      if (code === "SESSION_REVOKED") {
+        toast.info("Your session was reset. Please log in again.");
+      }
       sessionExpiredHandler?.();
     }
 
     // Account was deactivated mid-session (still-valid token, but the
     // backend now rejects it) — no amount of retrying/refreshing fixes
     // this, so drop straight to logout instead of surfacing a raw 403.
-    const code = (error.response?.data as { code?: string } | undefined)?.code;
     if (error.response?.status === 403 && code === "ACCOUNT_DEACTIVATED") {
       setAccessToken(null);
       sessionExpiredHandler?.();

@@ -4,11 +4,12 @@ import * as agentApi from "@/api/agent";
 import * as attendanceApi from "@/api/attendance";
 import * as leavesApi from "@/api/leaves";
 import * as notificationsApi from "@/api/notifications";
-import * as screenshotsApi from "@/api/screenshots";
+import { Loader2 } from "lucide-react";
 import { AttendanceStatusBadge } from "@/components/status-badges";
 import { AttendanceTrendChart } from "@/components/charts/AttendanceTrendChart";
-import { ScreenshotActivityChart } from "@/components/charts/ScreenshotActivityChart";
 import { MyAttendanceCard } from "@/components/dashboard/MyAttendanceCard";
+import { AnimatedNumber } from "@/components/motion/AnimatedNumber";
+import { StaggerGroup, StaggerItem } from "@/components/motion/Stagger";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -23,12 +24,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useFetch } from "@/hooks/useFetch";
 import { getErrorMessage } from "@/lib/api-client";
 import { formatDate, formatDateTime, formatTime } from "@/lib/format";
-import type { AgentCaptureStatus, AgentFixAllProgress } from "@/types";
-
-// An agent whose last heartbeat is older than this is either closed or
-// unreachable — its capture state is stale, not necessarily wrong, so it's
-// excluded from the "capture problem" list rather than shown as broken.
-const CAPTURE_HEARTBEAT_STALE_MS = 5 * 60 * 1000;
+import type { AgentFixAllProgress } from "@/types";
 
 // How long to keep polling for ack updates after clicking the button, and
 // how often — agents pick the signal up on their own ~15s poll cycle, so a
@@ -55,36 +51,14 @@ export function FullAccessDashboard() {
   }, []);
 
   const attendanceToday = useFetch(() => attendanceApi.fetchTodayAttendance({ limit: 10 }), []);
-  const captureStatus = useFetch(() => agentApi.fetchCaptureStatuses(), []);
+  const pendingUninstalls = useFetch(() => agentApi.fetchPendingUninstalls(), []);
   const attendanceTrend = useFetch(() => attendanceApi.fetchAttendanceTrend({ days: 14 }), []);
-  const screenshotActivity = useFetch(() => screenshotsApi.fetchScreenshotActivity(7), []);
   const pendingLeaves = useFetch(() => leavesApi.fetchLeaves({ status: "pending", limit: 10 }), []);
   const activity = useFetch(() => notificationsApi.fetchNotifications({ limit: 50 }), []);
 
   const loginActivity = (activity.data?.items ?? [])
     .filter((n) => n.type === "login_alert")
     .slice(0, 10);
-
-  // Checked-in-but-not-actually-being-captured is otherwise invisible —
-  // discovered this only after manually cross-referencing timestamps for one
-  // employee. This surfaces it directly: anyone checked in right now whose
-  // agent last reported not-capturing (or an outright error), or whose agent
-  // hasn't reported in at all recently despite them being checked in.
-  const captureStatusByEmployee = new Map<number, AgentCaptureStatus>(
-    (captureStatus.data ?? []).map((s) => [s.id, s]),
-  );
-  const checkedInNow = (attendanceToday.data?.items ?? []).filter(
-    (row) => row.check_in_time && !row.check_out_time,
-  );
-  const captureProblems = checkedInNow
-    .map((row) => ({ row, status: captureStatusByEmployee.get(row.employee_id) ?? null }))
-    .filter(({ status }) => {
-      if (!status) return true; // never reported a heartbeat at all
-      const lastSeen = status.agent_last_seen_at ? new Date(status.agent_last_seen_at).getTime() : 0;
-      const stale = Date.now() - lastSeen > CAPTURE_HEARTBEAT_STALE_MS;
-      if (stale) return false; // agent isn't reachable right now — that's the offline list's job, not this one
-      return !status.agent_capturing || Boolean(status.agent_last_capture_error);
-    });
 
   async function handleApprove(id: number) {
     setBusyId(id);
@@ -140,6 +114,23 @@ export function FullAccessDashboard() {
     }
   }
 
+  // Lets a CEO/manager manually clear a stuck "agent still installed"
+  // entry once they've personally confirmed it's handled (machine wiped,
+  // agent removed by hand, etc.) instead of it sitting there forever
+  // waiting for an ack that may never come.
+  async function handleResolveUninstall(employeeId: number) {
+    setBusyId(employeeId);
+    try {
+      await agentApi.resolvePendingUninstall(employeeId);
+      toast.success("Marked as resolved");
+      pendingUninstalls.refetch();
+    } catch (err) {
+      toast.error(getErrorMessage(err, "Failed to mark as resolved"));
+    } finally {
+      setBusyId(null);
+    }
+  }
+
   // One click does both a session-refresh and an update-check on every
   // currently-signed-in agent at once, plus surfaces exactly which
   // employees' agents aren't reachable at all — those are the only ones a
@@ -190,10 +181,15 @@ export function FullAccessDashboard() {
   }
 
   return (
-    <div className="grid gap-4 xl:grid-cols-2">
-      {user?.role === "manager" && <MyAttendanceCard employeeId={user.id} />}
+    <StaggerGroup className="grid gap-4 xl:grid-cols-2">
+      {user?.role === "manager" && (
+        <StaggerItem>
+          <MyAttendanceCard employeeId={user.id} />
+        </StaggerItem>
+      )}
 
-      <Card className="xl:col-span-2">
+      <StaggerItem className="xl:col-span-2">
+      <Card>
         <CardHeader>
           <CardTitle>Desktop Agents</CardTitle>
           <CardDescription>
@@ -206,16 +202,23 @@ export function FullAccessDashboard() {
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
           <Button onClick={handleFixAll} disabled={fixingAll} className="self-start">
-            {fixingAll ? "Sending..." : "Fix All Agents Now"}
+            {fixingAll ? (
+              <>
+                <Loader2 className="animate-spin" />
+                Sending...
+              </>
+            ) : (
+              "Fix All Agents Now"
+            )}
           </Button>
 
           {fixAllProgress && (
             <div className="flex flex-col gap-3">
               <p className="text-sm text-muted-foreground">
-                <strong className="text-foreground">{fixAllProgress.respondedCount}</strong> of ~
-                {fixAllProgress.estimatedReachable} agent{fixAllProgress.estimatedReachable === 1 ? "" : "s"}{" "}
-                confirmed so far ({fixAllProgress.updated} updated to the latest version,{" "}
-                {fixAllProgress.alreadyCurrent} already up to date).{" "}
+                <AnimatedNumber value={fixAllProgress.respondedCount} className="font-semibold text-foreground" />{" "}
+                of ~{fixAllProgress.estimatedReachable} agent{fixAllProgress.estimatedReachable === 1 ? "" : "s"}{" "}
+                confirmed so far (<AnimatedNumber value={fixAllProgress.updated} /> updated to the latest version,{" "}
+                <AnimatedNumber value={fixAllProgress.alreadyCurrent} /> already up to date).{" "}
                 {isPollingFixAll ? "Still watching..." : "Done watching for this round."}
               </p>
 
@@ -244,51 +247,65 @@ export function FullAccessDashboard() {
           )}
         </CardContent>
       </Card>
+      </StaggerItem>
 
-      {captureProblems.length > 0 && (
-        <Card className="xl:col-span-2 border-destructive/30">
+      {(pendingUninstalls.data?.length ?? 0) > 0 && (
+        <StaggerItem className="xl:col-span-2">
+        <Card className="border-destructive/30">
           <CardHeader>
-            <CardTitle>Screen Capture Not Working</CardTitle>
+            <CardTitle>Deleted Employees — Agent Still Installed</CardTitle>
             <CardDescription>
-              These employees are checked in right now, but their agent isn't actually capturing
-              screenshots. "Fix All Agents Now" above will restart capture on any that just got
-              stuck — if the problem persists after that, it's a local issue on that machine (most
-              often a screen-recording permission that was never granted).
+              These employees were deleted, but their desktop agent hasn't confirmed removing
+              itself yet — their machine is offline right now. It'll uninstall on its own the
+              moment it's next turned on and connects, with nothing needed from anyone; this list
+              just tells you it hasn't happened yet.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <ul className="flex flex-col gap-2 text-sm">
-              {captureProblems.map(({ row, status }) => (
+              {pendingUninstalls.data?.map((emp) => (
                 <li
-                  key={row.employee_id}
-                  className="flex flex-col gap-0.5 rounded-md border border-destructive/30 bg-destructive/5 p-2"
+                  key={emp.employee_id}
+                  className="flex items-center justify-between gap-3 rounded-md border border-destructive/30 bg-destructive/5 p-2"
                 >
-                  <span className="font-medium">
-                    {row.full_name} <span className="text-muted-foreground">({row.employee_code})</span>
-                  </span>
-                  <span className="text-muted-foreground">
-                    {status
-                      ? status.agent_last_capture_error
-                        ? `Last error: ${status.agent_last_capture_error}`
-                        : "Agent reports capture is not running"
-                      : "Agent has never reported its capture status — likely still on an old version"}
-                    {status?.agent_version ? ` · v${status.agent_version}` : ""}
-                  </span>
+                  <div className="flex flex-col">
+                    <span className="font-medium">
+                      {emp.full_name} <span className="text-muted-foreground">({emp.employee_code})</span>
+                    </span>
+                    <span className="text-muted-foreground">
+                      Deleted {formatDateTime(emp.requested_at)}
+                    </span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={busyId === emp.employee_id}
+                    onClick={() => handleResolveUninstall(emp.employee_id)}
+                  >
+                    {busyId === emp.employee_id ? (
+                      <Loader2 className="animate-spin" />
+                    ) : (
+                      "Mark as Resolved"
+                    )}
+                  </Button>
                 </li>
               ))}
             </ul>
           </CardContent>
         </Card>
+        </StaggerItem>
       )}
 
-      <AttendanceTrendChart
-        data={attendanceTrend.data}
-        loading={attendanceTrend.loading}
-        description="Company-wide present, late, and absent counts, last 14 days."
-      />
-      <ScreenshotActivityChart data={screenshotActivity.data} loading={screenshotActivity.loading} />
+      <StaggerItem>
+        <AttendanceTrendChart
+          data={attendanceTrend.data}
+          loading={attendanceTrend.loading}
+          description="Company-wide present, late, and absent counts, last 14 days."
+        />
+      </StaggerItem>
 
-      <Card className="xl:col-span-2">
+      <StaggerItem className="xl:col-span-2">
+      <Card>
         <CardHeader>
           <CardTitle>Today's Attendance</CardTitle>
         </CardHeader>
@@ -339,8 +356,10 @@ export function FullAccessDashboard() {
           )}
         </CardContent>
       </Card>
+      </StaggerItem>
 
-      <Card className="xl:col-span-2">
+      <StaggerItem className="xl:col-span-2">
+      <Card>
         <CardHeader>
           <CardTitle>Pending Leave Requests</CardTitle>
         </CardHeader>
@@ -396,8 +415,10 @@ export function FullAccessDashboard() {
           )}
         </CardContent>
       </Card>
+      </StaggerItem>
 
-      <Card className="xl:col-span-2">
+      <StaggerItem className="xl:col-span-2">
+      <Card>
         <CardHeader>
           <CardTitle>Recent Login Activity</CardTitle>
         </CardHeader>
@@ -420,6 +441,7 @@ export function FullAccessDashboard() {
           )}
         </CardContent>
       </Card>
-    </div>
+      </StaggerItem>
+    </StaggerGroup>
   );
 }

@@ -24,8 +24,8 @@ const MAC_DOWNLOAD_URL = `${API_BASE_URL}/downloads/desktop-agent?platform=mac`;
 
 // Step 2 of onboarding: submitting the profile form (step 1) creates the
 // account, but it isn't really usable until the desktop agent has signed
-// in too (that's what actually enables attendance/screenshot monitoring),
-// so this step blocks moving on until the backend confirms that happened.
+// in too (that's what actually enables attendance tracking), so this step
+// blocks moving on until the backend confirms that happened.
 function AgentSetupStep({ token }: { token: string }) {
   const navigate = useNavigate();
   const [checking, setChecking] = useState(false);

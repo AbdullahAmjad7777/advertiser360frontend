@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import * as attendanceApi from "@/api/attendance";
 import { AttendanceStatusBadge } from "@/components/status-badges";
@@ -10,7 +11,7 @@ import { formatTime } from "@/lib/format";
 
 // Shared between the Employee dashboard and the Manager view of the
 // full-access dashboard — managers check in/out through the same flow as
-// employees, they just aren't screenshot-monitored by the desktop agent.
+// employees.
 //
 // Reads the *current shift* record (resolved server-side by shift date, not
 // the browser's plain calendar date) rather than querying attendance history
@@ -80,12 +81,26 @@ export function MyAttendanceCard({ employeeId }: { employeeId: number }) {
             <div>
               {!todayRecord?.check_in_time && (
                 <Button onClick={handleCheckIn} disabled={actionLoading}>
-                  Check In
+                  {actionLoading ? (
+                    <>
+                      <Loader2 className="animate-spin" />
+                      Checking in...
+                    </>
+                  ) : (
+                    "Check In"
+                  )}
                 </Button>
               )}
               {todayRecord?.check_in_time && !todayRecord.check_out_time && (
                 <Button onClick={handleCheckOut} disabled={actionLoading}>
-                  Check Out
+                  {actionLoading ? (
+                    <>
+                      <Loader2 className="animate-spin" />
+                      Checking out...
+                    </>
+                  ) : (
+                    "Check Out"
+                  )}
                 </Button>
               )}
             </div>

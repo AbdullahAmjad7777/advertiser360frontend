@@ -93,7 +93,7 @@ export default function EmployeesPage() {
     if (
       !window.confirm(
         `Permanently delete ${employee.full_name}? This removes their account and all of their ` +
-          `data (attendance, payroll, screenshots, leaves, messages) from the system. This cannot be undone.`,
+          `data (attendance, payroll, leaves, messages) from the system. This cannot be undone.`,
       )
     ) {
       return;

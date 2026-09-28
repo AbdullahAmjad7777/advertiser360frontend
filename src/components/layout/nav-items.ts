@@ -5,7 +5,6 @@ import {
   CalendarDays,
   Wallet,
   UserCircle,
-  MonitorPlay,
   MessageSquare,
   Settings,
 } from "lucide-react";
@@ -29,11 +28,6 @@ export function getNavItems(user: AuthUser): NavItem[] {
     { label: "Leaves", to: "/leaves", icon: CalendarDays },
     { label: "Payroll", to: "/payroll", icon: Wallet },
     { label: "Messages", to: "/messages", icon: MessageSquare },
-    ...(fullAccess
-      ? [
-          { label: "Screenshots", to: "/screenshots", icon: MonitorPlay },
-          { label: "Settings", to: "/settings", icon: Settings },
-        ]
-      : []),
+    ...(fullAccess ? [{ label: "Settings", to: "/settings", icon: Settings }] : []),
   ];
 }

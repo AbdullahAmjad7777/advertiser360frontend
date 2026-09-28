@@ -4,6 +4,8 @@ import * as attendanceApi from "@/api/attendance";
 import { AttendanceTrendChart } from "@/components/charts/AttendanceTrendChart";
 import { DownloadAgentCard } from "@/components/dashboard/DownloadAgentCard";
 import { MyAttendanceCard } from "@/components/dashboard/MyAttendanceCard";
+import { AnimatedNumber } from "@/components/motion/AnimatedNumber";
+import { StaggerGroup, StaggerItem } from "@/components/motion/Stagger";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
 import { useFetch } from "@/hooks/useFetch";
@@ -17,9 +19,12 @@ export function EmployeeDashboard() {
   const notifications = useFetch(() => notificationsApi.fetchNotifications({ limit: 5 }), []);
 
   return (
-    <div className="grid gap-4 lg:grid-cols-2">
-      <MyAttendanceCard employeeId={user!.id} />
+    <StaggerGroup className="grid gap-4 lg:grid-cols-2">
+      <StaggerItem>
+        <MyAttendanceCard employeeId={user!.id} />
+      </StaggerItem>
 
+      <StaggerItem>
       <Card>
         <CardHeader>
           <CardTitle>Leave Balance</CardTitle>
@@ -33,7 +38,7 @@ export function EmployeeDashboard() {
                 <li key={b.leave_type_id} className="flex items-center justify-between text-sm">
                   <span>{b.type_name}</span>
                   <span className="font-medium">
-                    {b.remaining} / {b.total_allotted} days left
+                    <AnimatedNumber value={b.remaining} /> / {b.total_allotted} days left
                   </span>
                 </li>
               ))}
@@ -43,17 +48,19 @@ export function EmployeeDashboard() {
           )}
         </CardContent>
       </Card>
+      </StaggerItem>
 
-      <div className="lg:col-span-2">
+      <StaggerItem className="lg:col-span-2">
         <AttendanceTrendChart
           data={attendanceTrend.data}
           loading={attendanceTrend.loading}
           title="My Attendance"
           description="Your present, late, and absent days, last 14 days."
         />
-      </div>
+      </StaggerItem>
 
-      <Card className="lg:col-span-2">
+      <StaggerItem className="lg:col-span-2">
+      <Card>
         <CardHeader>
           <CardTitle>Recent Notifications</CardTitle>
         </CardHeader>
@@ -76,10 +83,11 @@ export function EmployeeDashboard() {
           )}
         </CardContent>
       </Card>
+      </StaggerItem>
 
-      <div className="lg:col-span-2">
+      <StaggerItem className="lg:col-span-2">
         <DownloadAgentCard />
-      </div>
-    </div>
+      </StaggerItem>
+    </StaggerGroup>
   );
 }

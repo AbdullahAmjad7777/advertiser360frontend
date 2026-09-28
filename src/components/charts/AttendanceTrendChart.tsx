@@ -1,4 +1,5 @@
 import { useId, useMemo, useState } from "react";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { AttendanceTrendPoint } from "@/types";
@@ -196,7 +197,7 @@ export function AttendanceTrendChart({
                           const y = cursorY - segHeight;
                           cursorY = y - 2; // 2px surface gap between stacked segments
                           return (
-                            <rect
+                            <motion.rect
                               key={s.key}
                               x={slotX}
                               y={y}
@@ -204,7 +205,12 @@ export function AttendanceTrendChart({
                               height={Math.max(0, segHeight)}
                               rx={2}
                               fill={s.color}
+                              className="transition-opacity duration-150"
                               opacity={isHovered || hoverIndex === null ? 1 : 0.45}
+                              initial={{ scaleY: 0 }}
+                              animate={{ scaleY: 1 }}
+                              transition={{ duration: 0.5, delay: i * 0.035, ease: [0.16, 1, 0.3, 1] }}
+                              style={{ transformOrigin: "bottom", transformBox: "fill-box" }}
                             />
                           );
                         })}

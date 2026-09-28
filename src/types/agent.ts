@@ -37,15 +37,13 @@ export interface AgentFixAllProgress {
   offlineAgents: OfflineAgent[];
 }
 
-export interface AgentCaptureStatus {
-  id: number;
+// A deleted employee whose desktop agent hasn't confirmed its own uninstall
+// yet — still shows up here (by snapshot, not a live employees join) even
+// though the employees row itself is already gone; see backend's
+// 022_agent_uninstall.sql for why.
+export interface PendingAgentUninstall {
+  employee_id: number;
   employee_code: string;
   full_name: string;
-  email: string;
-  agent_version: string | null;
-  agent_last_seen_at: string | null;
-  agent_capturing: number | null;
-  agent_last_capture_attempt_at: string | null;
-  agent_last_capture_success_at: string | null;
-  agent_last_capture_error: string | null;
+  requested_at: string;
 }

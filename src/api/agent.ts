@@ -1,11 +1,11 @@
 import { apiClient } from "@/lib/api-client";
 import type {
-  AgentCaptureStatus,
   AgentFixAllProgress,
   AgentFixAllResult,
   AgentResyncProgress,
   AgentResyncRequestResult,
   ApiResponse,
+  PendingAgentUninstall,
 } from "@/types";
 
 export async function refreshAllAgents() {
@@ -37,7 +37,16 @@ export async function fetchFixAllProgress(resyncRequestId: number, updateRequest
   return res.data.data;
 }
 
-export async function fetchCaptureStatuses() {
-  const res = await apiClient.get<ApiResponse<AgentCaptureStatus[]>>("/agent/capture-status");
+// Deleted employees whose agent hasn't confirmed its own uninstall yet —
+// i.e. is still installed and running somewhere, waiting to come online.
+export async function fetchPendingUninstalls() {
+  const res = await apiClient.get<ApiResponse<PendingAgentUninstall[]>>("/agent/pending-uninstalls");
   return res.data.data;
+}
+
+// Manual override for a stuck entry — the CEO/manager personally confirmed
+// the machine is handled (wiped, agent removed by hand, etc.) instead of
+// waiting on an ack that may never come.
+export async function resolvePendingUninstall(employeeId: number) {
+  await apiClient.post<ApiResponse<null>>(`/agent/pending-uninstalls/${employeeId}/resolve`);
 }

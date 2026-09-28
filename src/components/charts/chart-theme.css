@@ -2,7 +2,7 @@
    separate from the app's --chart-1..5 brand tokens because those fail the
    lightness/contrast checks for use as data-mark fills. Status colors map
    attendance meaning (present=good, late=warning, absent=critical); the
-   sequential blue is used for single-series trends like screenshot activity. */
+   sequential blue is used for single-series trends. */
 .viz-root {
   color-scheme: light;
   --viz-surface: transparent;

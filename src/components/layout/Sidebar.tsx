@@ -1,4 +1,5 @@
 import { Menu, X } from "lucide-react";
+import { motion } from "framer-motion";
 import { NavLink } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { getNavItems } from "./nav-items";
@@ -23,6 +24,12 @@ export function Sidebar({
   onClose,
 }: SidebarProps) {
   const navItems = getNavItems(user);
+  // The desktop rail and mobile drawer are both mounted in the DOM at once
+  // (the rail is merely CSS-hidden below md, not unmounted) — sharing one
+  // layoutId between them would leave framer-motion animating between two
+  // simultaneously-active pills. Scoping it by which instance this is keeps
+  // each one's shared-layout animation independent.
+  const pillLayoutId = onClose ? "sidebar-active-pill-mobile" : "sidebar-active-pill-desktop";
 
   return (
     <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
@@ -85,23 +92,34 @@ export function Sidebar({
             title={collapsed ? item.label : undefined}
             className={({ isActive }) =>
               cn(
-                "group relative flex items-center overflow-hidden rounded-lg py-2 text-sm font-medium transition-all",
+                "group relative isolate flex items-center overflow-hidden rounded-lg py-2 text-sm font-medium transition-colors",
                 collapsed ? "justify-center px-0" : "gap-2.5 px-3",
                 isActive
-                  ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm shadow-sidebar-primary/20"
+                  ? "text-sidebar-primary-foreground"
                   : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
               )
             }
           >
-            <item.icon className="size-4 shrink-0 transition-transform group-hover:scale-105" />
-            <span
-              className={cn(
-                "truncate transition-all duration-200",
-                collapsed ? "w-0 opacity-0" : "w-auto opacity-100",
-              )}
-            >
-              {item.label}
-            </span>
+            {({ isActive }) => (
+              <>
+                {isActive && (
+                  <motion.span
+                    layoutId={pillLayoutId}
+                    className="absolute inset-0 -z-10 rounded-lg bg-sidebar-primary shadow-sm shadow-sidebar-primary/20"
+                    transition={{ type: "spring", stiffness: 500, damping: 34 }}
+                  />
+                )}
+                <item.icon className="size-4 shrink-0 transition-transform group-hover:scale-105" />
+                <span
+                  className={cn(
+                    "truncate transition-all duration-200",
+                    collapsed ? "w-0 opacity-0" : "w-auto opacity-100",
+                  )}
+                >
+                  {item.label}
+                </span>
+              </>
+            )}
           </NavLink>
         ))}
       </nav>

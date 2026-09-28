@@ -1,6 +1,5 @@
 import { apiClient } from "@/lib/api-client";
 import type {
-  AgentSignInStatus,
   ApiResponse,
   CompleteOnboardingInput,
   Employee,
@@ -9,11 +8,6 @@ import type {
 
 export async function fetchInvitationByToken(token: string) {
   const res = await apiClient.get<ApiResponse<InvitationPrefill>>(`/onboarding/${token}`);
-  return res.data.data;
-}
-
-export async function checkAgentSignInStatus(token: string) {
-  const res = await apiClient.get<ApiResponse<AgentSignInStatus>>(`/onboarding/${token}/agent-status`);
   return res.data.data;
 }
 

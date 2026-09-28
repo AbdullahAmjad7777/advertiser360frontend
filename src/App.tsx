@@ -9,7 +9,6 @@ import EmployeeDetailPage from "@/pages/EmployeeDetailPage";
 import EmployeesPage from "@/pages/EmployeesPage";
 import LeavesPage from "@/pages/LeavesPage";
 import LoginPage from "@/pages/LoginPage";
-import MessagesPage from "@/pages/MessagesPage";
 import OnboardingPage from "@/pages/OnboardingPage";
 import PayrollPage from "@/pages/PayrollPage";
 import SettingsPage from "@/pages/SettingsPage";
@@ -53,7 +52,6 @@ function AppContent() {
         <Route path="/employees/:id" element={<EmployeeDetailPage />} />
         <Route path="/leaves" element={<LeavesPage />} />
         <Route path="/payroll" element={<PayrollPage />} />
-        <Route path="/messages" element={<MessagesPage />} />
         <Route path="/settings" element={<SettingsPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

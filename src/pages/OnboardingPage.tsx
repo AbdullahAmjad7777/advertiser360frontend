@@ -1,9 +1,8 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Download } from "lucide-react";
 import { toast } from "sonner";
 import * as onboardingApi from "@/api/onboarding";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,108 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useFetch } from "@/hooks/useFetch";
-import { API_BASE_URL, getErrorMessage } from "@/lib/api-client";
-import { detectOS } from "@/lib/os-detect";
-import { triggerGuardedDownload } from "@/lib/download";
-
-const WINDOWS_DOWNLOAD_URL = `${API_BASE_URL}/downloads/desktop-agent`;
-const MAC_DOWNLOAD_URL = `${API_BASE_URL}/downloads/desktop-agent?platform=mac`;
-
-// Step 2 of onboarding: submitting the profile form (step 1) creates the
-// account, but it isn't really usable until the desktop agent has signed
-// in too (that's what actually enables attendance tracking), so this step
-// blocks moving on until the backend confirms that happened.
-function AgentSetupStep({ token }: { token: string }) {
-  const navigate = useNavigate();
-  const [checking, setChecking] = useState(false);
-  const [notYetSignedIn, setNotYetSignedIn] = useState(false);
-  const os = detectOS();
-  const isMac = os === "mac";
-  const primaryUrl = isMac ? MAC_DOWNLOAD_URL : WINDOWS_DOWNLOAD_URL;
-  const otherUrl = isMac ? WINDOWS_DOWNLOAD_URL : MAC_DOWNLOAD_URL;
-
-  async function handleCheckStatus() {
-    setChecking(true);
-    setNotYetSignedIn(false);
-    try {
-      const { signedIn } = await onboardingApi.checkAgentSignInStatus(token);
-      if (signedIn) {
-        toast.success("Desktop agent signed in — your account is fully set up.");
-        navigate("/login");
-      } else {
-        setNotYetSignedIn(true);
-      }
-    } catch (err) {
-      toast.error(getErrorMessage(err, "Failed to check agent sign-in status"));
-    } finally {
-      setChecking(false);
-    }
-  }
-
-  return (
-    <div className="flex min-h-screen items-center justify-center p-4">
-      <Card className="w-full max-w-lg">
-        <CardHeader>
-          <CardTitle>Almost Done! Setup Your Desktop Agent</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-5">
-          <p className="text-sm text-muted-foreground">
-            Your profile has been saved. One last step — install the Advertiser360 Agent, the app
-            that tracks your attendance sessions, and sign in with it.
-          </p>
-
-          <div className="flex flex-col items-start gap-2">
-            <a
-              href={primaryUrl}
-              download
-              onClick={(e) => {
-                e.preventDefault();
-                triggerGuardedDownload(primaryUrl, isMac ? "The Mac installer" : "The Windows installer");
-              }}
-              className={buttonVariants({ variant: "default" })}
-            >
-              <Download />
-              Download Advertiser360 Agent for {isMac ? "Mac" : "Windows"}
-            </a>
-            <a
-              href={otherUrl}
-              download
-              onClick={(e) => {
-                e.preventDefault();
-                triggerGuardedDownload(otherUrl, isMac ? "The Windows installer" : "The Mac installer");
-              }}
-              className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
-            >
-              Download for {isMac ? "Windows" : "Mac"} instead
-            </a>
-          </div>
-
-          <ol className="flex flex-col gap-2 text-sm text-muted-foreground">
-            <li>
-              a. Download the file above and {isMac ? "open the .dmg, then drag the app into Applications" : "extract/install it on your computer"}.
-            </li>
-            <li>b. Open the Advertiser360 Agent app.</li>
-            <li>
-              c. Sign in using the <span className="font-medium text-foreground">same email and password</span> you
-              just used to submit this form.
-            </li>
-          </ol>
-
-          {notYetSignedIn && (
-            <p className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
-              Please download and sign in to the Advertiser360 Agent first before you can access
-              your dashboard.
-            </p>
-          )}
-
-          <Button onClick={handleCheckStatus} disabled={checking}>
-            {checking ? "Checking..." : notYetSignedIn ? "Check Again" : "I've Signed In"}
-          </Button>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
+import { getErrorMessage } from "@/lib/api-client";
 
 interface FormState {
   fullName: string;
@@ -164,11 +62,11 @@ const EMPTY_FORM: FormState = {
 
 export default function OnboardingPage() {
   const { token } = useParams<{ token: string }>();
+  const navigate = useNavigate();
   const invitation = useFetch(() => onboardingApi.fetchInvitationByToken(token!), [token]);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [profilePicture, setProfilePicture] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [step, setStep] = useState<"form" | "agent-setup">("form");
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -212,8 +110,8 @@ export default function OnboardingPage() {
         iban: form.iban || undefined,
         profilePicture,
       });
-      setStep("agent-setup");
-      toast.success("Profile submitted — now set up your desktop agent.");
+      toast.success("Profile submitted — your account is ready. Please sign in.");
+      navigate("/login");
     } catch (err) {
       toast.error(getErrorMessage(err, "Failed to submit your profile"));
     } finally {
@@ -245,10 +143,6 @@ export default function OnboardingPage() {
         </Card>
       </div>
     );
-  }
-
-  if (step === "agent-setup") {
-    return <AgentSetupStep token={token!} />;
   }
 
   const { email, departments, designations, managers } = invitation.data;

@@ -2,7 +2,6 @@ import { apiClient } from "@/lib/api-client";
 import type {
   ApiResponse,
   CreateEmployeeInput,
-  DirectoryEntry,
   Employee,
   EmployeeListParams,
   Paginated,
@@ -11,13 +10,6 @@ import type {
 
 export async function fetchEmployees(params: EmployeeListParams) {
   const res = await apiClient.get<ApiResponse<Paginated<Employee>>>("/employees", { params });
-  return res.data.data;
-}
-
-export async function fetchDirectory(search?: string) {
-  const res = await apiClient.get<ApiResponse<DirectoryEntry[]>>("/employees/directory", {
-    params: search ? { search } : undefined,
-  });
   return res.data.data;
 }
 

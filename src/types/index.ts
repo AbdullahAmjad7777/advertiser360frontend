@@ -7,4 +7,3 @@ export * from "./payroll";
 export * from "./notification";
 export * from "./settings";
 export * from "./onboarding";
-export * from "./agent";

@@ -2,7 +2,6 @@ import * as leavesApi from "@/api/leaves";
 import * as notificationsApi from "@/api/notifications";
 import * as attendanceApi from "@/api/attendance";
 import { AttendanceTrendChart } from "@/components/charts/AttendanceTrendChart";
-import { DownloadAgentCard } from "@/components/dashboard/DownloadAgentCard";
 import { MyAttendanceCard } from "@/components/dashboard/MyAttendanceCard";
 import { AnimatedNumber } from "@/components/motion/AnimatedNumber";
 import { StaggerGroup, StaggerItem } from "@/components/motion/Stagger";
@@ -83,10 +82,6 @@ export function EmployeeDashboard() {
           )}
         </CardContent>
       </Card>
-      </StaggerItem>
-
-      <StaggerItem className="lg:col-span-2">
-        <DownloadAgentCard />
       </StaggerItem>
     </StaggerGroup>
   );

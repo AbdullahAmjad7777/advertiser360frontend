@@ -12,11 +12,15 @@ export interface Task {
   completed_at: string | null;
   created_at: string;
   updated_at: string;
+  // 1 when the person added it for themselves (not assigned by the CEO).
+  self_added: 0 | 1 | null;
 }
 
 export interface TaskListParams {
   assignedTo?: number;
   status?: "pending" | "completed" | "all";
+  // Manager only: "team" returns every employee's tasks instead of their own.
+  scope?: "mine" | "team";
   from?: string;
   to?: string;
 }
@@ -24,7 +28,8 @@ export interface TaskListParams {
 export interface TaskInput {
   title: string;
   description?: string | null;
-  assignedTo: number;
+  // Ignored for non-CEO callers: their task is always for themselves.
+  assignedTo?: number;
   dueDate?: string;
 }
 

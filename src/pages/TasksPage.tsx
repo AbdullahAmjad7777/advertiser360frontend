@@ -5,6 +5,7 @@ import * as attendanceApi from "@/api/attendance";
 import * as tasksApi from "@/api/tasks";
 import { PersonSelect } from "@/components/PersonSelect";
 import { MyTasksCard } from "@/components/tasks/MyTasksCard";
+import { TaskOriginBadge } from "@/components/tasks/TaskOriginBadge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,7 +24,105 @@ import { useAuth } from "@/hooks/useAuth";
 import { useFetch } from "@/hooks/useFetch";
 import { getErrorMessage } from "@/lib/api-client";
 import { formatDate, formatDateTime } from "@/lib/format";
-import { canManageTasks } from "@/lib/permissions";
+import { canManageTasks, isFullAccess } from "@/lib/permissions";
+import type { Task } from "@/types";
+
+// Shared by the CEO's "All Tasks" and the manager's "Team Tasks" views.
+// onDelete is only passed for the CEO.
+function TasksTable({
+  tasks,
+  onDelete,
+  deletingId,
+}: {
+  tasks: Task[];
+  onDelete?: (id: number) => void;
+  deletingId?: number | null;
+}) {
+  return (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Task</TableHead>
+          <TableHead>Person</TableHead>
+          <TableHead>From</TableHead>
+          <TableHead>Due</TableHead>
+          <TableHead>Status</TableHead>
+          {onDelete && <TableHead />}
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {tasks.map((task) => (
+          <TableRow key={task.id}>
+            <TableCell className="max-w-xs">
+              <div className="font-medium">{task.title}</div>
+              {task.description && (
+                <div className="truncate text-xs text-muted-foreground">{task.description}</div>
+              )}
+            </TableCell>
+            <TableCell>{task.assigned_to_name}</TableCell>
+            <TableCell>
+              <TaskOriginBadge task={task} />
+            </TableCell>
+            <TableCell>{formatDate(task.due_date)}</TableCell>
+            <TableCell>
+              {task.is_completed ? (
+                <div className="flex flex-col gap-0.5">
+                  <Badge variant="secondary">Completed</Badge>
+                  <span className="text-xs text-muted-foreground">{formatDateTime(task.completed_at)}</span>
+                </div>
+              ) : (
+                <Badge variant="outline">Pending</Badge>
+              )}
+            </TableCell>
+            {onDelete && (
+              <TableCell className="text-right">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label={`Delete ${task.title}`}
+                  disabled={deletingId === task.id}
+                  onClick={() => onDelete(task.id)}
+                >
+                  <Trash2 />
+                </Button>
+              </TableCell>
+            )}
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  );
+}
+
+// Manager: every employee's tasks (assigned by the CEO or self-added),
+// read-only. Scoped server-side by scope=team.
+function TeamTasksCard() {
+  const people = useFetch(() => attendanceApi.fetchAttendanceStats(), []);
+  const [filter, setFilter] = useState<number | null>(null);
+  const tasks = useFetch(
+    () => tasksApi.fetchTasks({ scope: "team", assignedTo: filter ?? undefined }),
+    [filter],
+  );
+  const options = (people.data ?? []).map((p) => ({ id: p.employeeId, name: p.fullName, role: p.role }));
+
+  return (
+    <Card>
+      <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2 space-y-0">
+        <CardTitle>Team Tasks</CardTitle>
+        <PersonSelect people={options} value={filter} onChange={setFilter} allowAll />
+      </CardHeader>
+      <CardContent>
+        {tasks.loading ? (
+          <p className="text-sm text-muted-foreground">Loading...</p>
+        ) : (tasks.data ?? []).length === 0 ? (
+          <p className="text-sm text-muted-foreground">No tasks yet.</p>
+        ) : (
+          <TasksTable tasks={tasks.data ?? []} />
+        )}
+      </CardContent>
+    </Card>
+  );
+}
 
 function CeoTasksView() {
   // The server scopes this to every employee + the manager for the CEO,
@@ -138,7 +237,7 @@ function CeoTasksView() {
       </Card>
 
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0">
+        <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2 space-y-0">
           <CardTitle>All Tasks</CardTitle>
           <PersonSelect people={options} value={filter} onChange={setFilter} allowAll />
         </CardHeader>
@@ -148,54 +247,11 @@ function CeoTasksView() {
           ) : (tasks.data ?? []).length === 0 ? (
             <p className="text-sm text-muted-foreground">No tasks yet.</p>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Task</TableHead>
-                  <TableHead>Assigned to</TableHead>
-                  <TableHead>Due</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {(tasks.data ?? []).map((task) => (
-                  <TableRow key={task.id}>
-                    <TableCell className="max-w-xs">
-                      <div className="font-medium">{task.title}</div>
-                      {task.description && (
-                        <div className="truncate text-xs text-muted-foreground">{task.description}</div>
-                      )}
-                    </TableCell>
-                    <TableCell>{task.assigned_to_name}</TableCell>
-                    <TableCell>{formatDate(task.due_date)}</TableCell>
-                    <TableCell>
-                      {task.is_completed ? (
-                        <div className="flex flex-col gap-0.5">
-                          <Badge variant="secondary">Completed</Badge>
-                          <span className="text-xs text-muted-foreground">
-                            {formatDateTime(task.completed_at)}
-                          </span>
-                        </div>
-                      ) : (
-                        <Badge variant="outline">Pending</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        aria-label={`Delete ${task.title}`}
-                        disabled={deletingId === task.id}
-                        onClick={() => handleDelete(task.id)}
-                      >
-                        <Trash2 />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <TasksTable
+              tasks={tasks.data ?? []}
+              onDelete={handleDelete}
+              deletingId={deletingId}
+            />
           )}
         </CardContent>
       </Card>
@@ -207,6 +263,7 @@ export default function TasksPage() {
   const { user } = useAuth();
   if (!user) return null;
   const isCeo = canManageTasks(user.role);
+  const isManager = !isCeo && isFullAccess(user.role);
 
   return (
     <div className="flex flex-col gap-4">
@@ -215,10 +272,19 @@ export default function TasksPage() {
         <p className="mt-1 text-sm text-muted-foreground">
           {isCeo
             ? "Assign tasks to employees and the manager, and track their progress."
-            : "Tick off each task when it's done. You can't check out while tasks due today or earlier are still pending."}
+            : isManager
+              ? "Your own tasks, plus every employee's tasks (assigned by the CEO or added by themselves)."
+              : "Add your own tasks and tick each one off when it's done. The CEO and manager can see them. You can't check out while tasks due today or earlier are still pending."}
         </p>
       </div>
-      {isCeo ? <CeoTasksView /> : <MyTasksCard title="Assigned to me" />}
+      {isCeo ? (
+        <CeoTasksView />
+      ) : (
+        <div className="grid gap-4 xl:grid-cols-[24rem_1fr] *:min-w-0">
+          <MyTasksCard title="My Tasks" />
+          {isManager && <TeamTasksCard />}
+        </div>
+      )}
     </div>
   );
 }

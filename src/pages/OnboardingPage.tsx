@@ -65,7 +65,6 @@ export default function OnboardingPage() {
   const navigate = useNavigate();
   const invitation = useFetch(() => onboardingApi.fetchInvitationByToken(token!), [token]);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
-  const [profilePicture, setProfilePicture] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
@@ -108,7 +107,6 @@ export default function OnboardingPage() {
         accountTitle: form.accountTitle || undefined,
         accountNumber: form.accountNumber || undefined,
         iban: form.iban || undefined,
-        profilePicture,
       });
       toast.success("Profile submitted — your account is ready. Please sign in.");
       navigate("/login");
@@ -162,12 +160,13 @@ export default function OnboardingPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="flex flex-col gap-6" noValidate>
-            <section className="grid grid-cols-2 gap-4">
-              <h3 className="col-span-2 text-sm font-semibold">Account</h3>
-              <div className="col-span-2 flex flex-col gap-2">
+            <section className="grid gap-4 sm:grid-cols-2">
+              <h3 className="sm:col-span-2 text-sm font-semibold">Account</h3>
+              <div className="sm:col-span-2 flex flex-col gap-2">
                 <Label htmlFor="fullName">Full name</Label>
                 <Input
                   id="fullName"
+                  maxLength={150}
                   value={form.fullName}
                   onChange={(e) => update("fullName", e.target.value)}
                   required
@@ -179,6 +178,7 @@ export default function OnboardingPage() {
                   id="password"
                   type="password"
                   minLength={8}
+                  maxLength={72}
                   value={form.password}
                   onChange={(e) => update("password", e.target.value)}
                   required
@@ -195,27 +195,20 @@ export default function OnboardingPage() {
                   required
                 />
               </div>
-              <div className="col-span-2 flex flex-col gap-2">
-                <Label htmlFor="profilePicture">Profile picture</Label>
-                <Input
-                  id="profilePicture"
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setProfilePicture(e.target.files?.[0] ?? null)}
-                />
-              </div>
             </section>
 
-            <section className="grid grid-cols-2 gap-4">
-              <h3 className="col-span-2 text-sm font-semibold">Personal details</h3>
+            <section className="grid gap-4 sm:grid-cols-2">
+              <h3 className="sm:col-span-2 text-sm font-semibold">Personal details</h3>
               <div className="flex flex-col gap-2">
                 <Label htmlFor="phone">Phone</Label>
-                <Input id="phone" value={form.phone} onChange={(e) => update("phone", e.target.value)} />
+                <Input id="phone"
+                  maxLength={20} value={form.phone} onChange={(e) => update("phone", e.target.value)} />
               </div>
               <div className="flex flex-col gap-2">
                 <Label htmlFor="cnicNumber">CNIC number</Label>
                 <Input
                   id="cnicNumber"
+                  maxLength={20}
                   value={form.cnicNumber}
                   onChange={(e) => update("cnicNumber", e.target.value)}
                 />
@@ -242,14 +235,15 @@ export default function OnboardingPage() {
                   onChange={(e) => update("dateOfBirth", e.target.value)}
                 />
               </div>
-              <div className="col-span-2 flex flex-col gap-2">
+              <div className="sm:col-span-2 flex flex-col gap-2">
                 <Label htmlFor="address">Address</Label>
-                <Input id="address" value={form.address} onChange={(e) => update("address", e.target.value)} />
+                <Input id="address"
+                  maxLength={255} value={form.address} onChange={(e) => update("address", e.target.value)} />
               </div>
             </section>
 
-            <section className="grid grid-cols-2 gap-4">
-              <h3 className="col-span-2 text-sm font-semibold">Employment</h3>
+            <section className="grid gap-4 sm:grid-cols-2">
+              <h3 className="sm:col-span-2 text-sm font-semibold">Employment</h3>
               <div className="flex flex-col gap-2">
                 <Label>Department</Label>
                 <Select
@@ -286,7 +280,7 @@ export default function OnboardingPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="col-span-2 flex flex-col gap-2">
+              <div className="sm:col-span-2 flex flex-col gap-2">
                 <Label>Reporting manager</Label>
                 <Select value={form.managerId} onValueChange={(v) => update("managerId", v ?? "")}>
                   <SelectTrigger className="w-full">
@@ -301,7 +295,7 @@ export default function OnboardingPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="col-span-2 flex flex-col gap-2">
+              <div className="sm:col-span-2 flex flex-col gap-2">
                 <Label htmlFor="baseSalary">Expected salary (PKR)</Label>
                 <Input
                   id="baseSalary"
@@ -314,12 +308,13 @@ export default function OnboardingPage() {
               </div>
             </section>
 
-            <section className="grid grid-cols-2 gap-4">
-              <h3 className="col-span-2 text-sm font-semibold">Emergency contact</h3>
+            <section className="grid gap-4 sm:grid-cols-2">
+              <h3 className="sm:col-span-2 text-sm font-semibold">Emergency contact</h3>
               <div className="flex flex-col gap-2">
                 <Label htmlFor="emergencyContactName">Name</Label>
                 <Input
                   id="emergencyContactName"
+                  maxLength={150}
                   value={form.emergencyContactName}
                   onChange={(e) => update("emergencyContactName", e.target.value)}
                 />
@@ -328,6 +323,7 @@ export default function OnboardingPage() {
                 <Label htmlFor="emergencyContactPhone">Phone</Label>
                 <Input
                   id="emergencyContactPhone"
+                  maxLength={20}
                   value={form.emergencyContactPhone}
                   onChange={(e) => update("emergencyContactPhone", e.target.value)}
                 />
@@ -336,24 +332,27 @@ export default function OnboardingPage() {
                 <Label htmlFor="emergencyContactRelation">Relation</Label>
                 <Input
                   id="emergencyContactRelation"
+                  maxLength={50}
                   value={form.emergencyContactRelation}
                   onChange={(e) => update("emergencyContactRelation", e.target.value)}
                 />
               </div>
             </section>
 
-            <section className="grid grid-cols-2 gap-4">
-              <h3 className="col-span-2 text-sm font-semibold">
+            <section className="grid gap-4 sm:grid-cols-2">
+              <h3 className="sm:col-span-2 text-sm font-semibold">
                 Bank details <span className="font-normal text-muted-foreground">(optional)</span>
               </h3>
               <div className="flex flex-col gap-2">
                 <Label htmlFor="bankName">Bank name</Label>
-                <Input id="bankName" value={form.bankName} onChange={(e) => update("bankName", e.target.value)} />
+                <Input id="bankName"
+                  maxLength={100} value={form.bankName} onChange={(e) => update("bankName", e.target.value)} />
               </div>
               <div className="flex flex-col gap-2">
                 <Label htmlFor="accountTitle">Account title</Label>
                 <Input
                   id="accountTitle"
+                  maxLength={150}
                   value={form.accountTitle}
                   onChange={(e) => update("accountTitle", e.target.value)}
                 />
@@ -362,13 +361,15 @@ export default function OnboardingPage() {
                 <Label htmlFor="accountNumber">Account number</Label>
                 <Input
                   id="accountNumber"
+                  maxLength={50}
                   value={form.accountNumber}
                   onChange={(e) => update("accountNumber", e.target.value)}
                 />
               </div>
               <div className="flex flex-col gap-2">
                 <Label htmlFor="iban">IBAN</Label>
-                <Input id="iban" value={form.iban} onChange={(e) => update("iban", e.target.value)} />
+                <Input id="iban"
+                  maxLength={50} value={form.iban} onChange={(e) => update("iban", e.target.value)} />
               </div>
             </section>
 

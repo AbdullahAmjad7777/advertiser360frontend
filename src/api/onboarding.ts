@@ -32,7 +32,6 @@ export async function completeOnboarding(token: string, input: CompleteOnboardin
   if (input.accountNumber) formData.append("accountNumber", input.accountNumber);
   if (input.iban) formData.append("iban", input.iban);
   if (input.baseSalary) formData.append("baseSalary", String(input.baseSalary));
-  if (input.profilePicture) formData.append("profilePicture", input.profilePicture);
 
   const res = await apiClient.post<ApiResponse<Employee>>(
     `/onboarding/${token}/complete`,

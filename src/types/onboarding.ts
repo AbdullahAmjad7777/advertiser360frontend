@@ -49,5 +49,4 @@ export interface CompleteOnboardingInput {
   accountNumber?: string;
   iban?: string;
   baseSalary?: number;
-  profilePicture?: File | null;
 }

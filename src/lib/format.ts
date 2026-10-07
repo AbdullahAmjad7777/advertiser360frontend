@@ -81,3 +81,11 @@ export function localDateString(date: Date = new Date()): string {
   const lookup = Object.fromEntries(parts.map((p) => [p.type, p.value]));
   return `${lookup.year}-${lookup.month}-${lookup.day}`;
 }
+
+// 3725 -> "1h 2m"; 45 -> "0m". Break totals are shown in hours and minutes.
+export function formatDuration(totalSeconds: number): string {
+  const minutes = Math.floor(Math.max(0, totalSeconds) / 60);
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return h > 0 ? `${h}h ${m}m` : `${m}m`;
+}

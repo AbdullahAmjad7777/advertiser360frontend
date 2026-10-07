@@ -10,7 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/hooks/useAuth";
 import { useFetch } from "@/hooks/useFetch";
 import { getErrorMessage } from "@/lib/api-client";
-import { isFullAccess } from "@/lib/permissions";
+import { canManageLatePolicy, isFullAccess } from "@/lib/permissions";
 
 // HTML time inputs work in HH:MM; the API stores/returns HH:MM:SS.
 function toInputValue(time: string): string {
@@ -28,6 +28,13 @@ export default function SettingsPage() {
   const [endTime, setEndTime] = useState("");
   const [saving, setSaving] = useState(false);
   const [togglingLocation, setTogglingLocation] = useState(false);
+  const latePolicy = useFetch(() => settingsApi.fetchLatePolicy(), []);
+  const [graceMinutes, setGraceMinutes] = useState("");
+  const [savingGrace, setSavingGrace] = useState(false);
+
+  useEffect(() => {
+    if (latePolicy.data) setGraceMinutes(String(latePolicy.data.graceMinutes));
+  }, [latePolicy.data]);
 
   useEffect(() => {
     if (officeHours.data) {
@@ -70,7 +77,22 @@ export default function SettingsPage() {
     }
   }
 
+  async function handleGraceSubmit(e: FormEvent) {
+    e.preventDefault();
+    setSavingGrace(true);
+    try {
+      await settingsApi.updateLatePolicy(Number(graceMinutes));
+      toast.success("Late grace period updated");
+      latePolicy.refetch();
+    } catch (err) {
+      toast.error(getErrorMessage(err, "Failed to update grace period"));
+    } finally {
+      setSavingGrace(false);
+    }
+  }
+
   const isOvernight = startTime && endTime && endTime <= startTime;
+  const canEditGrace = user ? canManageLatePolicy(user.role) : false;
 
   return (
     <div className="flex flex-col gap-4">
@@ -128,6 +150,45 @@ export default function SettingsPage() {
                   {saving ? "Saving..." : "Save"}
                 </Button>
               </div>
+            </form>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="max-w-lg">
+        <CardHeader>
+          <CardTitle>Late Policy</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {latePolicy.loading ? (
+            <p className="text-sm text-muted-foreground">Loading...</p>
+          ) : (
+            <form onSubmit={handleGraceSubmit} className="flex flex-col gap-4">
+              <p className="text-sm text-muted-foreground">
+                A check-in more than this many minutes after the shift start time is late. Every 3
+                late check-ins in a month deduct 1 day's salary.
+                {!canEditGrace && " Only the CEO can change this."}
+              </p>
+              <div className="flex max-w-40 flex-col gap-2">
+                <Label htmlFor="grace-minutes">Grace period (minutes)</Label>
+                <Input
+                  id="grace-minutes"
+                  type="number"
+                  min={0}
+                  max={180}
+                  value={graceMinutes}
+                  onChange={(e) => setGraceMinutes(e.target.value)}
+                  disabled={!canEditGrace}
+                  required
+                />
+              </div>
+              {canEditGrace && (
+                <div>
+                  <Button type="submit" disabled={savingGrace}>
+                    {savingGrace ? "Saving..." : "Save"}
+                  </Button>
+                </div>
+              )}
             </form>
           )}
         </CardContent>

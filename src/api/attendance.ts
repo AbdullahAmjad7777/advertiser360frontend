@@ -8,6 +8,11 @@ import type {
   AttendanceRecord,
   AttendanceTrendParams,
   AttendanceTrendPoint,
+  CheckInBlock,
+  LateSummaryRow,
+  MissedCheckout,
+  PersonAttendanceStats,
+  YearCalendar,
   Paginated,
   PageParams,
   TodayAttendanceRow,
@@ -65,6 +70,46 @@ export async function fetchAttendanceHistory(employeeId: number, params: Attenda
 
 export async function fetchAttendanceTrend(params: AttendanceTrendParams) {
   const res = await apiClient.get<ApiResponse<AttendanceTrendPoint[]>>("/attendance/trend", {
+    params,
+  });
+  return res.data.data;
+}
+
+export async function fetchCheckInBlock() {
+  const res = await apiClient.get<ApiResponse<CheckInBlock>>("/attendance/me/check-in-block");
+  return res.data.data;
+}
+
+export async function fetchMissedCheckouts() {
+  const res = await apiClient.get<ApiResponse<MissedCheckout[]>>("/attendance/missed-checkouts");
+  return res.data.data;
+}
+
+export async function closeMissedCheckout(
+  attendanceId: number,
+  input: { checkOutTime: string; reason: string },
+) {
+  const res = await apiClient.post<ApiResponse<AttendanceRecord>>(
+    `/attendance/${attendanceId}/close-missed-checkout`,
+    input,
+  );
+  return res.data.data;
+}
+
+export async function fetchYearCalendar(params: { employeeId?: number; year?: number }) {
+  const res = await apiClient.get<ApiResponse<YearCalendar>>("/attendance/calendar", { params });
+  return res.data.data;
+}
+
+export async function fetchAttendanceStats(params: { year?: number } = {}) {
+  const res = await apiClient.get<ApiResponse<PersonAttendanceStats[]>>("/attendance/stats", {
+    params,
+  });
+  return res.data.data;
+}
+
+export async function fetchLateSummary(params: { month?: number; year?: number } = {}) {
+  const res = await apiClient.get<ApiResponse<LateSummaryRow[]>>("/attendance/late-summary", {
     params,
   });
   return res.data.data;

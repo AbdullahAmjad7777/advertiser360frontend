@@ -1,10 +1,14 @@
 import * as leavesApi from "@/api/leaves";
 import * as notificationsApi from "@/api/notifications";
 import * as attendanceApi from "@/api/attendance";
+import { AttendanceDonutChart } from "@/components/charts/AttendanceDonutChart";
 import { AttendanceTrendChart } from "@/components/charts/AttendanceTrendChart";
+import { LeavesBarChart } from "@/components/charts/LeavesBarChart";
+import { LateSummaryCard } from "@/components/dashboard/LateSummaryCard";
 import { MyAttendanceCard } from "@/components/dashboard/MyAttendanceCard";
 import { AnimatedNumber } from "@/components/motion/AnimatedNumber";
 import { StaggerGroup, StaggerItem } from "@/components/motion/Stagger";
+import { MyTasksCard } from "@/components/tasks/MyTasksCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
 import { useFetch } from "@/hooks/useFetch";
@@ -16,11 +20,38 @@ export function EmployeeDashboard() {
   const attendanceTrend = useFetch(() => attendanceApi.fetchAttendanceTrend({ days: 14 }), []);
   const balance = useFetch(() => leavesApi.fetchLeaveBalance(user!.id), [user!.id]);
   const notifications = useFetch(() => notificationsApi.fetchNotifications({ limit: 5 }), []);
+  const stats = useFetch(() => attendanceApi.fetchAttendanceStats(), []);
 
   return (
     <StaggerGroup className="grid gap-4 lg:grid-cols-2">
       <StaggerItem>
-        <MyAttendanceCard employeeId={user!.id} />
+        <MyAttendanceCard employeeId={user!.id} onChanged={stats.refetch} />
+      </StaggerItem>
+
+      <StaggerItem>
+        <MyTasksCard />
+      </StaggerItem>
+
+      <StaggerItem>
+        <AttendanceDonutChart
+          data={stats.data}
+          loading={stats.loading}
+          title="My Attendance %"
+          description="Days attended out of working days this year (Sundays excluded)."
+        />
+      </StaggerItem>
+
+      <StaggerItem>
+        <LateSummaryCard />
+      </StaggerItem>
+
+      <StaggerItem className="lg:col-span-2">
+        <LeavesBarChart
+          data={stats.data}
+          loading={stats.loading}
+          title="My Leaves & Absences"
+          description="Approved leave days and absent days this year."
+        />
       </StaggerItem>
 
       <StaggerItem>

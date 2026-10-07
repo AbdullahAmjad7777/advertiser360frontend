@@ -6,3 +6,9 @@ export interface OfficeHours {
 export interface LocationRestrictionSetting {
   enabled: boolean;
 }
+
+export interface LatePolicy {
+  officeStartTime: string;
+  graceMinutes: number;
+  latesPerDeduction: number;
+}

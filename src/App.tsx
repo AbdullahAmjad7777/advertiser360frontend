@@ -4,6 +4,8 @@ import { AppShell } from "@/components/layout/AppShell";
 import { LocationRestrictedScreen } from "@/components/LocationRestrictedScreen";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
+import AttendanceCalendarPage from "@/pages/AttendanceCalendarPage";
+import BreaksPage from "@/pages/BreaksPage";
 import DashboardPage from "@/pages/DashboardPage";
 import EmployeeDetailPage from "@/pages/EmployeeDetailPage";
 import EmployeesPage from "@/pages/EmployeesPage";
@@ -12,6 +14,7 @@ import LoginPage from "@/pages/LoginPage";
 import OnboardingPage from "@/pages/OnboardingPage";
 import PayrollPage from "@/pages/PayrollPage";
 import SettingsPage from "@/pages/SettingsPage";
+import TasksPage from "@/pages/TasksPage";
 
 function AppContent() {
   const {
@@ -50,6 +53,9 @@ function AppContent() {
         <Route path="/" element={<DashboardPage />} />
         <Route path="/employees" element={<EmployeesPage />} />
         <Route path="/employees/:id" element={<EmployeeDetailPage />} />
+        <Route path="/tasks" element={<TasksPage />} />
+        <Route path="/breaks" element={<BreaksPage />} />
+        <Route path="/attendance-calendar" element={<AttendanceCalendarPage />} />
         <Route path="/leaves" element={<LeavesPage />} />
         <Route path="/payroll" element={<PayrollPage />} />
         <Route path="/settings" element={<SettingsPage />} />

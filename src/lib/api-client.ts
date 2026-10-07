@@ -140,3 +140,12 @@ export function getErrorDetails(error: unknown): LocationErrorDetails | undefine
   }
   return undefined;
 }
+
+// The structured `details` the backend attaches to some errors (e.g. the
+// pending task list on a blocked check-out).
+export function getErrorPayload<T>(error: unknown): T | undefined {
+  if (axios.isAxiosError(error)) {
+    return (error.response?.data as { details?: T } | undefined)?.details;
+  }
+  return undefined;
+}

@@ -4,9 +4,14 @@ import * as attendanceApi from "@/api/attendance";
 import * as leavesApi from "@/api/leaves";
 import * as notificationsApi from "@/api/notifications";
 import { AttendanceStatusBadge } from "@/components/status-badges";
+import { AttendanceDonutChart } from "@/components/charts/AttendanceDonutChart";
 import { AttendanceTrendChart } from "@/components/charts/AttendanceTrendChart";
+import { LeavesBarChart } from "@/components/charts/LeavesBarChart";
+import { LateSummaryCard } from "@/components/dashboard/LateSummaryCard";
+import { MissedCheckoutsCard } from "@/components/dashboard/MissedCheckoutsCard";
 import { MyAttendanceCard } from "@/components/dashboard/MyAttendanceCard";
 import { StaggerGroup, StaggerItem } from "@/components/motion/Stagger";
+import { MyTasksCard } from "@/components/tasks/MyTasksCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -30,6 +35,8 @@ export function FullAccessDashboard() {
   const attendanceTrend = useFetch(() => attendanceApi.fetchAttendanceTrend({ days: 14 }), []);
   const pendingLeaves = useFetch(() => leavesApi.fetchLeaves({ status: "pending", limit: 10 }), []);
   const activity = useFetch(() => notificationsApi.fetchNotifications({ limit: 50 }), []);
+  const stats = useFetch(() => attendanceApi.fetchAttendanceStats(), []);
+  const isManager = user?.role === "manager";
 
   const loginActivity = (activity.data?.items ?? [])
     .filter((n) => n.type === "login_alert")
@@ -91,11 +98,45 @@ export function FullAccessDashboard() {
 
   return (
     <StaggerGroup className="grid gap-4 xl:grid-cols-2">
-      {user?.role === "manager" && (
-        <StaggerItem>
-          <MyAttendanceCard employeeId={user.id} />
-        </StaggerItem>
+      {isManager && user && (
+        <>
+          <StaggerItem>
+            <MyAttendanceCard employeeId={user.id} onChanged={stats.refetch} />
+          </StaggerItem>
+          <StaggerItem>
+            <MyTasksCard />
+          </StaggerItem>
+        </>
       )}
+
+      <StaggerItem className="xl:col-span-2">
+        <AttendanceDonutChart
+          data={stats.data}
+          loading={stats.loading}
+          title="Attendance %"
+          description={
+            isManager
+              ? "Each employee's attended days out of working days this year (Sundays excluded)."
+              : "Everyone's attended days out of working days this year, including the manager (Sundays excluded)."
+          }
+        />
+      </StaggerItem>
+
+      <StaggerItem>
+        <LeavesBarChart
+          data={stats.data}
+          loading={stats.loading}
+          description="Approved leave days and absent days per person, this year."
+        />
+      </StaggerItem>
+
+      <StaggerItem>
+        <LateSummaryCard />
+      </StaggerItem>
+
+      <StaggerItem className="xl:col-span-2">
+        <MissedCheckoutsCard />
+      </StaggerItem>
 
       <StaggerItem>
         <AttendanceTrendChart

@@ -1,5 +1,5 @@
 import { apiClient } from "@/lib/api-client";
-import type { ApiResponse, LocationRestrictionSetting, OfficeHours } from "@/types";
+import type { ApiResponse, LatePolicy, LocationRestrictionSetting, OfficeHours } from "@/types";
 
 export async function fetchOfficeHours() {
   const res = await apiClient.get<ApiResponse<OfficeHours>>("/settings/office-hours");
@@ -23,5 +23,17 @@ export async function updateLocationRestriction(enabled: boolean) {
     "/settings/location-restriction",
     { enabled },
   );
+  return res.data.data;
+}
+
+export async function fetchLatePolicy() {
+  const res = await apiClient.get<ApiResponse<LatePolicy>>("/settings/late-policy");
+  return res.data.data;
+}
+
+export async function updateLatePolicy(graceMinutes: number) {
+  const res = await apiClient.patch<ApiResponse<LatePolicy>>("/settings/late-policy", {
+    graceMinutes,
+  });
   return res.data.data;
 }

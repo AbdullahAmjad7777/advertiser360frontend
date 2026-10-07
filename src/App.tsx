@@ -4,7 +4,6 @@ import { AppShell } from "@/components/layout/AppShell";
 import { LocationRestrictedScreen } from "@/components/LocationRestrictedScreen";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
-import AttendanceCalendarPage from "@/pages/AttendanceCalendarPage";
 import BreaksPage from "@/pages/BreaksPage";
 import DashboardPage from "@/pages/DashboardPage";
 import EmployeeDetailPage from "@/pages/EmployeeDetailPage";
@@ -55,7 +54,6 @@ function AppContent() {
         <Route path="/employees/:id" element={<EmployeeDetailPage />} />
         <Route path="/tasks" element={<TasksPage />} />
         <Route path="/breaks" element={<BreaksPage />} />
-        <Route path="/attendance-calendar" element={<AttendanceCalendarPage />} />
         <Route path="/leaves" element={<LeavesPage />} />
         <Route path="/payroll" element={<PayrollPage />} />
         <Route path="/settings" element={<SettingsPage />} />

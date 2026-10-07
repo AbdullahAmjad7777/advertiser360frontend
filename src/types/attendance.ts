@@ -100,32 +100,8 @@ export interface MissedCheckout {
   check_in_time: string;
 }
 
-// "pending" = today's shift with no check-in yet; "upcoming" = future.
-export type CalendarDayStatus =
-  | "present"
-  | "late"
-  | "half_day"
-  | "absent"
-  | "on_leave"
-  | "holiday"
-  | "off"
-  | "not_joined"
-  | "upcoming"
-  | "pending";
 
-export interface CalendarDay {
-  date: string;
-  status: CalendarDayStatus;
-  checkInTime: string | null;
-  checkOutTime: string | null;
-  totalHours: string | null;
-}
 
-export interface CalendarMonth {
-  month: number;
-  daysInMonth: number;
-  days: CalendarDay[];
-}
 
 export interface AttendanceSummary {
   workingDays: number;
@@ -139,13 +115,6 @@ export interface AttendanceSummary {
   onTimePercentage: number | null;
 }
 
-export interface YearCalendar {
-  employee: { id: number; fullName: string; employeeCode: string };
-  year: number;
-  isLeapYear: boolean;
-  months: CalendarMonth[];
-  summary: AttendanceSummary;
-}
 
 export interface PersonAttendanceStats extends AttendanceSummary {
   employeeId: number;

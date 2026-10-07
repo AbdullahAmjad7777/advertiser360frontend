@@ -12,7 +12,6 @@ import type {
   LateSummaryRow,
   MissedCheckout,
   PersonAttendanceStats,
-  YearCalendar,
   Paginated,
   PageParams,
   TodayAttendanceRow,
@@ -96,10 +95,6 @@ export async function closeMissedCheckout(
   return res.data.data;
 }
 
-export async function fetchYearCalendar(params: { employeeId?: number; year?: number }) {
-  const res = await apiClient.get<ApiResponse<YearCalendar>>("/attendance/calendar", { params });
-  return res.data.data;
-}
 
 export async function fetchAttendanceStats(params: { year?: number; month?: number } = {}) {
   const res = await apiClient.get<ApiResponse<PersonAttendanceStats[]>>("/attendance/stats", {

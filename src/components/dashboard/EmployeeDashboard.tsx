@@ -9,6 +9,8 @@ import { MyAttendanceCard } from "@/components/dashboard/MyAttendanceCard";
 import { AnimatedNumber } from "@/components/motion/AnimatedNumber";
 import { StaggerGroup, StaggerItem } from "@/components/motion/Stagger";
 import { MyTasksCard } from "@/components/tasks/MyTasksCard";
+import { MonthPicker, currentYearMonth, yearMonthLabel } from "@/components/MonthPicker";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
 import { useFetch } from "@/hooks/useFetch";
@@ -20,7 +22,8 @@ export function EmployeeDashboard() {
   const attendanceTrend = useFetch(() => attendanceApi.fetchAttendanceTrend({ days: 14 }), []);
   const balance = useFetch(() => leavesApi.fetchLeaveBalance(user!.id), [user!.id]);
   const notifications = useFetch(() => notificationsApi.fetchNotifications({ limit: 5 }), []);
-  const stats = useFetch(() => attendanceApi.fetchAttendanceStats(), []);
+  const [period, setPeriod] = useState(currentYearMonth);
+  const stats = useFetch(() => attendanceApi.fetchAttendanceStats(period), [period.year, period.month]);
 
   return (
     <StaggerGroup className="grid gap-4 lg:grid-cols-2">
@@ -37,7 +40,8 @@ export function EmployeeDashboard() {
           data={stats.data}
           loading={stats.loading}
           title="My Attendance %"
-          description="Days attended out of working days this year (Sundays excluded)."
+          description={`${yearMonthLabel(period)}: days you came out of working days so far (Sundays excluded). Green = on time (by 6:15 PM), amber = late.`}
+          action={<MonthPicker value={period} onChange={setPeriod} />}
         />
       </StaggerItem>
 
@@ -50,7 +54,7 @@ export function EmployeeDashboard() {
           data={stats.data}
           loading={stats.loading}
           title="My Leaves & Absences"
-          description="Approved leave days and absent days this year."
+          description={`Approved leave days and absent days, ${yearMonthLabel(period)}.`}
         />
       </StaggerItem>
 

@@ -101,7 +101,7 @@ export async function fetchYearCalendar(params: { employeeId?: number; year?: nu
   return res.data.data;
 }
 
-export async function fetchAttendanceStats(params: { year?: number } = {}) {
+export async function fetchAttendanceStats(params: { year?: number; month?: number } = {}) {
   const res = await apiClient.get<ApiResponse<PersonAttendanceStats[]>>("/attendance/stats", {
     params,
   });

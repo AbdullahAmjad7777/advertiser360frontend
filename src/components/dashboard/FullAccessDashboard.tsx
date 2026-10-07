@@ -12,6 +12,7 @@ import { MissedCheckoutsCard } from "@/components/dashboard/MissedCheckoutsCard"
 import { MyAttendanceCard } from "@/components/dashboard/MyAttendanceCard";
 import { StaggerGroup, StaggerItem } from "@/components/motion/Stagger";
 import { MyTasksCard } from "@/components/tasks/MyTasksCard";
+import { MonthPicker, currentYearMonth, yearMonthLabel } from "@/components/MonthPicker";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -35,7 +36,8 @@ export function FullAccessDashboard() {
   const attendanceTrend = useFetch(() => attendanceApi.fetchAttendanceTrend({ days: 14 }), []);
   const pendingLeaves = useFetch(() => leavesApi.fetchLeaves({ status: "pending", limit: 10 }), []);
   const activity = useFetch(() => notificationsApi.fetchNotifications({ limit: 50 }), []);
-  const stats = useFetch(() => attendanceApi.fetchAttendanceStats(), []);
+  const [period, setPeriod] = useState(currentYearMonth);
+  const stats = useFetch(() => attendanceApi.fetchAttendanceStats(period), [period.year, period.month]);
   const isManager = user?.role === "manager";
 
   const loginActivity = (activity.data?.items ?? [])
@@ -114,11 +116,8 @@ export function FullAccessDashboard() {
           data={stats.data}
           loading={stats.loading}
           title="Attendance %"
-          description={
-            isManager
-              ? "Each employee's attended days out of working days this year (Sundays excluded)."
-              : "Everyone's attended days out of working days this year, including the manager (Sundays excluded)."
-          }
+          description={`${yearMonthLabel(period)}: days each person came out of working days so far (Sundays excluded)${isManager ? "" : ", including the manager"}. Green = on time (by 6:15 PM), amber = late.`}
+          action={<MonthPicker value={period} onChange={setPeriod} />}
         />
       </StaggerItem>
 
@@ -126,7 +125,7 @@ export function FullAccessDashboard() {
         <LeavesBarChart
           data={stats.data}
           loading={stats.loading}
-          description="Approved leave days and absent days per person, this year."
+          description={`Approved leave days and absent days per person, ${yearMonthLabel(period)}.`}
         />
       </StaggerItem>
 

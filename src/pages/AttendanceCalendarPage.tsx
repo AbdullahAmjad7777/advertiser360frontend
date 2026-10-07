@@ -130,9 +130,10 @@ export default function AttendanceCalendarPage() {
       </div>
 
       {summary && (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
           {[
             ["Attendance", summary.attendancePercentage == null ? "–" : `${summary.attendancePercentage}%`],
+            ["On time", summary.onTimePercentage == null ? "–" : `${summary.onTimePercentage}%`],
             ["Days attended", `${summary.attendedDays} / ${summary.workingDays}`],
             ["Late", summary.lateDays],
             ["Absent", summary.absentDays],

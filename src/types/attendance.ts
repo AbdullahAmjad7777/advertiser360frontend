@@ -130,10 +130,13 @@ export interface CalendarMonth {
 export interface AttendanceSummary {
   workingDays: number;
   attendedDays: number;
+  onTimeDays: number;
   lateDays: number;
   absentDays: number;
   leaveDays: number;
+  missedCheckouts: number;
   attendancePercentage: number | null;
+  onTimePercentage: number | null;
 }
 
 export interface YearCalendar {

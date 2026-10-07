@@ -115,7 +115,7 @@ export default function SettingsPage() {
                 period) are marked late; every 3 late days deducts 1 day's pay from that month's
                 payroll. Sunday is the only weekly off — Monday through Saturday are working days.
               </p>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-4 sm:grid-cols-2">
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="office-start">Start time</Label>
                   <Input

@@ -57,12 +57,12 @@ export function AppShell() {
 
       <div
         className={cn(
-          "flex min-h-svh flex-1 flex-col",
+          "flex min-h-svh min-w-0 flex-1 flex-col",
           mobileNavOpen && "pointer-events-none md:pointer-events-auto",
         )}
       >
         <Topbar onMenuClick={() => setMobileNavOpen(true)} />
-        <main className="flex-1 p-4 md:p-6 lg:p-8">
+        <main className="min-w-0 flex-1 p-4 md:p-6 lg:p-8">
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={location.pathname}

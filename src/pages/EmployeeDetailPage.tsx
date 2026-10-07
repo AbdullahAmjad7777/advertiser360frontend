@@ -1,20 +1,24 @@
+import { useState } from "react";
 import { Navigate, useParams } from "react-router-dom";
 import * as employeesApi from "@/api/employees";
 import { EmployeeAttendanceTab } from "@/components/employees/EmployeeAttendanceTab";
 import { EmployeeLeavesTab } from "@/components/employees/EmployeeLeavesTab";
+import { ResetPasswordDialog } from "@/components/employees/ResetPasswordDialog";
 import { EmployeePayrollTab } from "@/components/employees/EmployeePayrollTab";
 import { ShiftTimingCard } from "@/components/employees/ShiftTimingCard";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
 import { useFetch } from "@/hooks/useFetch";
 import { formatDate } from "@/lib/format";
-import { isFullAccess } from "@/lib/permissions";
+import { canResetPassword, isFullAccess } from "@/lib/permissions";
 
 export default function EmployeeDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const employeeId = Number(id);
+  const [resetOpen, setResetOpen] = useState(false);
 
   const employee = useFetch(
     () => employeesApi.fetchEmployeeById(employeeId),
@@ -53,10 +57,18 @@ export default function EmployeeDetailPage() {
             </p>
           </div>
         </div>
-        <Badge variant={emp.is_active ? "default" : "secondary"}>
-          {emp.is_active ? "Active" : "Inactive"}
-        </Badge>
+        <div className="flex items-center gap-2">
+          {emp.is_active === 1 && user && canResetPassword(user, emp) && (
+            <Button size="sm" variant="outline" onClick={() => setResetOpen(true)}>
+              Reset password
+            </Button>
+          )}
+          <Badge variant={emp.is_active ? "default" : "secondary"}>
+            {emp.is_active ? "Active" : "Inactive"}
+          </Badge>
+        </div>
       </div>
+      {resetOpen && <ResetPasswordDialog employee={emp} onClose={() => setResetOpen(false)} />}
 
       <dl className="grid grid-cols-2 gap-4 rounded-md border p-4 text-sm sm:grid-cols-4">
         <div>

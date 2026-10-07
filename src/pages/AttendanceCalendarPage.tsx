@@ -114,12 +114,19 @@ export default function AttendanceCalendarPage() {
             with no check-in is absent.
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          {fullAccess && <PersonSelect people={options} value={personId} onChange={setPersonId} />}
+        <div className="flex w-full items-center gap-2 sm:w-auto">
+          {fullAccess && (
+            <PersonSelect
+              people={options}
+              value={personId}
+              onChange={setPersonId}
+              className="min-w-0 flex-1 sm:w-56 sm:flex-none"
+            />
+          )}
           <Button variant="outline" size="icon" aria-label="Previous year" onClick={() => setYear((y) => y - 1)}>
             <ChevronLeft />
           </Button>
-          <span className="w-20 text-center font-medium">
+          <span className="w-16 shrink-0 text-center font-medium sm:w-20">
             {year}
             {calendar.data?.isLeapYear && <span className="block text-[10px] text-muted-foreground">leap year</span>}
           </span>

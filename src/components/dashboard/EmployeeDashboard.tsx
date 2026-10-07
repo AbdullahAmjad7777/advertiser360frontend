@@ -26,7 +26,7 @@ export function EmployeeDashboard() {
   const stats = useFetch(() => attendanceApi.fetchAttendanceStats(period), [period.year, period.month]);
 
   return (
-    <StaggerGroup className="grid gap-4 lg:grid-cols-2">
+    <StaggerGroup className="grid gap-4 lg:grid-cols-2 *:min-w-0 [&>*>[data-slot=card]]:h-full">
       <StaggerItem>
         <MyAttendanceCard employeeId={user!.id} onChanged={stats.refetch} />
       </StaggerItem>
@@ -49,14 +49,7 @@ export function EmployeeDashboard() {
         <LateSummaryCard />
       </StaggerItem>
 
-      <StaggerItem className="lg:col-span-2">
-        <LeavesBarChart
-          data={stats.data}
-          loading={stats.loading}
-          title="My Leaves & Absences"
-          description={`Approved leave days and absent days, ${yearMonthLabel(period)}.`}
-        />
-      </StaggerItem>
+
 
       <StaggerItem>
       <Card>
@@ -82,6 +75,15 @@ export function EmployeeDashboard() {
           )}
         </CardContent>
       </Card>
+      </StaggerItem>
+
+      <StaggerItem>
+        <LeavesBarChart
+          data={stats.data}
+          loading={stats.loading}
+          title="My Leaves & Absences"
+          description={`Approved leave days and absent days, ${yearMonthLabel(period)}.`}
+        />
       </StaggerItem>
 
       <StaggerItem className="lg:col-span-2">

@@ -37,3 +37,14 @@ export async function revokeEmployeeSession(id: number) {
   const res = await apiClient.post<ApiResponse<Employee>>(`/employees/${id}/revoke-session`);
   return res.data.data;
 }
+
+export async function resetEmployeePassword(
+  id: number,
+  input: { newPassword: string; signOutEverywhere: boolean },
+) {
+  const res = await apiClient.post<ApiResponse<{ id: number; fullName: string }>>(
+    `/employees/${id}/reset-password`,
+    input,
+  );
+  return res.data.data;
+}

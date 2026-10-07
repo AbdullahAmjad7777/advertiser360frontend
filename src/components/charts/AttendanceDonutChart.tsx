@@ -151,8 +151,8 @@ export function AttendanceDonutChart({
 
   return (
     <Card className="viz-root">
-      <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0">
-        <div>
+      <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-2 space-y-0">
+        <div className="min-w-0 flex-1 basis-56">
           <CardTitle>{title}</CardTitle>
           {description && <p className="mt-1 text-xs text-muted-foreground">{description}</p>}
         </div>

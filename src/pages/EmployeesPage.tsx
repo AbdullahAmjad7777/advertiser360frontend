@@ -3,6 +3,7 @@ import { Navigate, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import * as employeesApi from "@/api/employees";
 import { EmployeeFormDialog } from "@/components/employees/EmployeeFormDialog";
+import { ResetPasswordDialog } from "@/components/employees/ResetPasswordDialog";
 import { InviteEmployeeDialog } from "@/components/employees/InviteEmployeeDialog";
 import { PendingInvitationsCard } from "@/components/employees/PendingInvitationsCard";
 import { Badge } from "@/components/ui/badge";
@@ -27,7 +28,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useFetch } from "@/hooks/useFetch";
 import { getErrorMessage } from "@/lib/api-client";
-import { isFullAccess } from "@/lib/permissions";
+import { canResetPassword, isFullAccess } from "@/lib/permissions";
 import type { Employee, EmployeeListParams } from "@/types";
 
 const PAGE_SIZE = 10;
@@ -41,6 +42,7 @@ export default function EmployeesPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
+  const [resettingEmployee, setResettingEmployee] = useState<Employee | null>(null);
   const [invitationsRefreshKey, setInvitationsRefreshKey] = useState(0);
   const debouncedSearch = useDebouncedValue(search);
 
@@ -194,6 +196,11 @@ export default function EmployeesPage() {
                       <Button size="sm" variant="outline" onClick={() => openEdit(emp)}>
                         Edit
                       </Button>
+                      {emp.is_active === 1 && user && canResetPassword(user, emp) && (
+                        <Button size="sm" variant="outline" onClick={() => setResettingEmployee(emp)}>
+                          Reset password
+                        </Button>
+                      )}
                       {emp.is_active === 1 && emp.id !== user?.id && (
                         <Button
                           size="sm"
@@ -259,6 +266,10 @@ export default function EmployeesPage() {
           allActive.refetch();
         }}
       />
+
+      {resettingEmployee && (
+        <ResetPasswordDialog employee={resettingEmployee} onClose={() => setResettingEmployee(null)} />
+      )}
 
       <InviteEmployeeDialog
         open={inviteDialogOpen}

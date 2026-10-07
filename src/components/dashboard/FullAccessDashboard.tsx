@@ -99,7 +99,7 @@ export function FullAccessDashboard() {
   }
 
   return (
-    <StaggerGroup className="grid gap-4 xl:grid-cols-2">
+    <StaggerGroup className="grid gap-4 xl:grid-cols-2 *:min-w-0 [&>*>[data-slot=card]]:h-full">
       {isManager && user && (
         <>
           <StaggerItem>
@@ -121,6 +121,10 @@ export function FullAccessDashboard() {
         />
       </StaggerItem>
 
+      <StaggerItem className="xl:col-span-2">
+        <MissedCheckoutsCard />
+      </StaggerItem>
+
       <StaggerItem>
         <LeavesBarChart
           data={stats.data}
@@ -130,20 +134,44 @@ export function FullAccessDashboard() {
       </StaggerItem>
 
       <StaggerItem>
-        <LateSummaryCard />
-      </StaggerItem>
-
-      <StaggerItem className="xl:col-span-2">
-        <MissedCheckoutsCard />
-      </StaggerItem>
-
-      <StaggerItem>
         <AttendanceTrendChart
           data={attendanceTrend.data}
           loading={attendanceTrend.loading}
           description="Company-wide present, late, and absent counts, last 14 days."
         />
       </StaggerItem>
+
+      <StaggerItem>
+        <LateSummaryCard />
+      </StaggerItem>
+
+      <StaggerItem>
+      <Card>
+        <CardHeader>
+          <CardTitle>Recent Login Activity</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {activity.loading ? (
+            <p className="text-sm text-muted-foreground">Loading...</p>
+          ) : loginActivity.length > 0 ? (
+            <ul className="flex flex-col gap-3">
+              {loginActivity.map((n) => (
+                <li key={n.id} className="flex flex-col gap-0.5 text-sm sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                  <span>{n.message}</span>
+                  <span className="shrink-0 text-xs text-muted-foreground">
+                    {formatDateTime(n.created_at)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-muted-foreground">No recent login activity.</p>
+          )}
+        </CardContent>
+      </Card>
+      </StaggerItem>
+
+
 
       <StaggerItem className="xl:col-span-2">
       <Card>
@@ -258,31 +286,6 @@ export function FullAccessDashboard() {
       </Card>
       </StaggerItem>
 
-      <StaggerItem className="xl:col-span-2">
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Login Activity</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {activity.loading ? (
-            <p className="text-sm text-muted-foreground">Loading...</p>
-          ) : loginActivity.length > 0 ? (
-            <ul className="flex flex-col gap-3">
-              {loginActivity.map((n) => (
-                <li key={n.id} className="flex items-center justify-between text-sm">
-                  <span>{n.message}</span>
-                  <span className="text-xs text-muted-foreground">
-                    {formatDateTime(n.created_at)}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-sm text-muted-foreground">No recent login activity.</p>
-          )}
-        </CardContent>
-      </Card>
-      </StaggerItem>
     </StaggerGroup>
   );
 }

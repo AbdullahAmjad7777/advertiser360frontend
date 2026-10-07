@@ -31,7 +31,7 @@ function Deduction({ row }: { row: LateSummaryRow }) {
   return (
     <Badge variant="destructive">
       -{row.deductionDays} day{row.deductionDays === 1 ? "" : "s"}
-      {row.deductionAmount != null && ` (${formatCurrency(row.deductionAmount)})`}
+      {row.deductionAmount != null && row.deductionAmount > 0 && ` (${formatCurrency(row.deductionAmount)})`}
     </Badge>
   );
 }
